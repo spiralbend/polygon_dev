@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>sincos_XYZ</title>
+		<title>sincos_GEOS</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="min.css">
@@ -73,17 +73,18 @@ function render() {
 			var nt = nits[i + 1] * cx
 			var size = 50
 
-			let X_c = size * (v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + noise[dex] * ns
-			let Y_c = size * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)) + noise[dex + 1] * ns
-			let Z_c = size * Math.exp( v[2] * Math.tan(v[3]*th) / (ph+v[0]) ) + noise[dex + 2] * ns
+			// let X_c = size * (v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + noise[dex] * ns
+			// let Y_c = size * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)) + noise[dex + 1] * ns
+			// let Z_c = size * Math.exp( v[2] * Math.tan(v[3]*th) / (ph+v[0]) ) + noise[dex + 2] * ns
 			
-			positions[i]     = zoom * X_c
-			positions[i + 1] = zoom * Y_c
-			positions[i + 2] = zoom * Z_c
+			// positions[i]     = zoom * X_c
+			// positions[i + 1] = zoom * Y_c
+			// positions[i + 2] = zoom * Z_c
 
-			let r = Math.sqrt(X_c**2 + Y_c**2 + Z_c**2)
-			let Z = Math.floor(Math.abs(r)) % numColors
-			var rs = r + s
+			// let r = Math.sqrt(X_c**2 + Y_c**2 + Z_c**2)
+			// let Z = Math.floor(Math.abs(r)) % numColors
+			let Z = 10//Math.floor(Math.abs(r)) % numColors
+			// var rs = r + s
 
 			colors[i]     = palet[0][Z]
 			colors[i + 1] = palet[1][Z] 
@@ -96,7 +97,7 @@ function render() {
 
 	}
 
-	points.geometry.attributes.position.needsUpdate = true;
+	//points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
 	renderer.render( scene, camera );
 	
@@ -177,7 +178,7 @@ function radius(obj,th,ph) {
 }
 
 function makeObjects() {
-	objects[0]  = ["calibration vector", 10]
+	objects[0]  = ["GEOS", 10]
 	objects[1]  = ["spacetime manifold", 30]
 	objects[2]  = ["mass ejection", 350]
 	objects[3]  = ["probability field", 16]
@@ -227,12 +228,14 @@ function makeGeometry() {
 	numP3 = numParticles * 3
 	var positions = new Array(numP3)
 	var colors = new Array(numP3)
-	var geometry = new THREE.BufferGeometry();
-	const sprite = new THREE.TextureLoader().load( './three.js/examples/textures/sprites/circle.png' );
+	//var geometry = new THREE.BufferGeometry();
+    var geometry = new THREE.SphereGeometry( 15, 32, 16 );
+	//const sprite = new THREE.TextureLoader().load( './three.js/examples/textures/sprites/circle.png' );
 	
-	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-	var material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
+	//geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+	//geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+	//var material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
+    var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
 
 	if (frames > 0) {
 		var x = points.rotation.x
@@ -241,7 +244,7 @@ function makeGeometry() {
 		scene.remove( points );
 	}
 
-	points = new THREE.Points( geometry, material );
+	points = new THREE.Mesh( geometry, material );
 	scene.add( points );
 
 	if (frames > 0) { 
