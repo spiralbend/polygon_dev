@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<script>
+window.onload = function () {
+
+  var soundAllowed = function (stream) {
+    window.persistAudioStream = stream;
+    var audioContent = new AudioContext();
+    var audioStream = audioContent.createMediaStreamSource(stream);
+    var analyser = audioContent.createAnalyser();
+    audioStream.connect(analyser);
+    analyser.fftSize = 1024;
+
+    var frequencyArray = new Uint8Array(analyser.frequencyBinCount);
+    var doDraw = function () {
+      var total = 0;
+      requestAnimationFrame(doDraw);
+      analyser.getByteFrequencyData(frequencyArray);
+      var adjustedLength;
+      for (var i = 0; i < 255; i++) {
+        total += frequencyArray[i];
+      }
+      console.log((total/100))
+    };
+    doDraw();
+  };
+
+  navigator.getUserMedia({ audio: true }, soundAllowed, soundAllowed);
+
+};
+</script>
+
+</html>

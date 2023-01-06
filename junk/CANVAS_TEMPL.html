@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+var canvas = document.getElementById('thiscanvas')
+var ctx = canvas.getContext('2d')
+var cw = canvas.width; var ch = canvas.height
+
+document.body.style.overflow = 'hidden'
+
+var draw = function(ctx) {
+
+			ctx.fillStyle = "#FF00FF"
+			ctx.fillRect(100,100,50,50)
+			ctx.fillStyle = "#00FF00"
+			ctx.fillRect(200,200,50,50)
+            ctx.draw
+}
+
+function main() {
+    draw()
+}
+
+
+});
+</script>
+<style type="text/css">
+	#thiscanvas {border:0px solid;position:absolute;top:0px;background-color:black;}
+</style>
+</head>
+<p id="stats"></p>
+<body style="position:relative;" bgcolor="black">
+<canvas id="thiscanvas" width=6000, height=6000>
+</canvas>
+Wot's... Uh the Deal?
+</body>
+</html>

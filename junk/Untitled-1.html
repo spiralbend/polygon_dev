@@ -1,0 +1,99 @@
+case 8: e.preventDefault(); setup(true); break //backspace
+case 9: e.preventDefault(); if (!dorando) { randomize() }; dorando = !dorando; break //TAB
+case 13: e.preventDefault(); setup(false); break //enter
+case 187: zoom *= 1.05; break //+
+case 189: zoom /= 1.05; break //-
+case 220: zoom = 1; camera.position.set( 0, 0, 1000 ); break //\
+case 112: e.preventDefault(); pix = 3; grain = 5000; edge = 5; dt = 0.02; dr = 0.002; setup(true); makeGeometry(); break //f1 lo-res performance
+case 113: e.preventDefault(); pix = 1; grain = 20000; edge = 10; dt = 0.012; dr = 0.008; setup(true); makeGeometry(); break //f2 hi-res detail
+case 114: e.preventDefault(); pix -= 0.2; if (pix<1) {pix = 1;} scene.remove( points ); makeGeometry(); break //f3
+case 115: e.preventDefault(); pix += 0.2; scene.remove( points ); makeGeometry(); break //f4
+case 117: e.preventDefault(); THETA = THETA < 4 ? 2 * THETA : Math.PI; scene.remove( points ); makeGeometry(); break //f6
+case 118: e.preventDefault(); dt /= 1.01; makeGeometry(); break //f7
+case 119: e.preventDefault(); dt *= 1.01; makeGeometry(); break //f8
+case 49: obj = 2;  break //1
+case 50: obj = 5;  break //2
+case 51: obj = 16;  break //3
+case 52: obj = 14;  break //4
+case 53: obj = 17;  break //5
+case 54: obj = 24;  break //6
+case 55: obj = 25;  break //7
+case 56: obj = 26;  break //8
+case 57: obj = 28;  break //9
+case 48: obj = 31; break //0
+case 81: obj = 11; break //q
+case 87: obj = 12; break //w
+case 69: obj = 1; break //e
+case 82: obj = 3; break //r
+case 84: obj = 15; break //t
+case 89: obj = 13; break //y
+case 85: obj = 4; break //u
+case 73: obj = 18; break //i
+case 79: obj = 19; break //o
+case 80: obj = 20; break //p
+case 90: obj = 21; break //z
+case 88: obj = 22; break //x
+case 67: obj = 23;  break //c
+case 86: obj = 6;  break //v
+case 66: obj = 7;  break //b
+case 78: obj = 8;  break //n
+case 77: obj = 27;  break //m
+case 72: obj = 9;  break //h
+case 74: obj = 29; break //j
+case 188: obj = 30; break //,
+case 190: obj = 10; break //.
+case 191: obj = 32; break ///
+case 192: obj = 0; break //`
+case 186: obj = 33; break //;
+case 219: obj = 34; break //[
+case 221: obj = 35; break //]
+case 65: rotate = !rotate; break //a rotate on/off
+case 68: colormap(); break //d shuffle palet
+case 70: fuzzy = !fuzzy; break //f fuzzy on/off
+case 75: ny = (ny + 1) % 6;	break //k noise (kaos) level
+case 76: clean = !clean; break //l label on/off
+case 32: //space reverse time
+    e.preventDefault()
+    for (var q = 0; q <= pars; q++) {
+        dv[q] *= -1
+
+    }
+    dr *= -1
+    break
+case 27: //ESC stop
+    
+    if(stopped) {
+        animate()
+        stopped = false
+        document.getElementById('esh').innerHTML = "&nbsp;";
+    } else {
+        cancelAnimationFrame(animid);
+        stopped = true
+        help()
+    }
+    break
+case 71: //g pause time only
+    if(stat == 0) {
+        stat = 1
+        rotate = true
+    } else {
+        stat = 0
+        rotate = false
+    }
+    break
+case 222: //' flow on/off
+    if(flow == 0) {
+        flow = 1
+    } else {
+        flow = 0
+    }
+    break
+case 83: //s sound on/off
+    if(sound) {
+        sound = false
+    } else {
+        sound = true
+        navigator.getUserMedia({ audio: true }, soundAllowed, soundNotAllowed);
+    }
+    break
+}

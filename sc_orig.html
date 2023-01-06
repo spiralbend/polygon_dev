@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+var canvas = document.getElementById('thiscanvas')
+var ctx = canvas.getContext('2d')
+
+var obj = 7; var scale = 280
+var dim = 6000; var grain = 500000
+var points = 80000; var dpts = points
+var dt = 0.0011; var ddt = dt; var delay = 10 
+var Xo = 1600; var Yo = 700
+
+var ink = "#00FF00"; var desc = "cosmic background"
+var stopped = false
+var t = 0; var c = 0; var f = true
+var X = 0; var Y = 0; var R = 0; var pix = 1
+var pars = 6; var edge = 12
+var v = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
+
+var draw = function(ctx) {
+	t=0
+	for (var p = 0; p <= points; p++) {
+		switch (obj) {
+			case 1:  R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(Math.tan(v[4]*t))**v[5]); break
+			case 2:  R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(v[4]*t)); break
+			case 3:  R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(Math.tan(v[4]*t)**v[5])); break
+			case 4:  R = scale * (v[0] * Math.sin(v[1]*t) + v[3] * Math.cos(v[4]*t)); break
+			case 5:  R = scale * Math.tan( Math.log(Math.abs((v[0] * Math.sin(v[1]*t))**v[2] + (v[3] * Math.cos(v[4]*t))**v[5])) ); break
+			case 6:  R = scale * Math.log( Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(v[4]*t) ); break
+			case 7:  R = scale * Math.sin(v[1]*t) ** Math.cos(v[4]*t); break
+			case 8:  R = scale * Math.sin(v[1]*t) ** (Math.cos(v[4]*t)**v[2]); break
+			case 9:  R = scale * Math.sin(v[1]*t)**v[2] * Math.cos(v[4]*t)**v[5]; break
+			case 10: R = scale * Math.tan(Math.sin(v[1]*t)) ** Math.tan(Math.cos(v[4]*t)**v[5]); break
+			case 11: R = scale * Math.exp( (v[0] * Math.sin(v[1]*t))**v[2] + (v[3] * Math.cos(v[4]*t))**v[5] ); break
+			case 12: R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(v[4]*t)**v[5]); break
+			case 13: R = scale * Math.exp( v[0] * Math.sin(v[1]*t) * v[2] * Math.tan(v[3]*t) / t ); break
+			case 14: R = scale * Math.exp( v[2] * Math.tan(v[3]*t) / (t+v[0]) ); break
+			case 15: R = scale * Math.exp ( v[0] * Math.sin(v[1]*t)**v[2] / t ); break
+			case 16: R = scale * v[0] * Math.exp( -1 * Math.abs(v[1]*Math.sin(v[2]*t) ** Math.cos(v[3]*t)) ); break
+			case 17: R = scale * Math.exp( -1 * Math.abs(v[0]*Math.sin(v[1]*t) ** Math.cos(v[1]*t)) ); break
+			case 18: R = scale * v[6]*t * Math.log(Math.abs((v[4]*2) * (t+v[3]**3) * Math.exp (( (t+v[3]**3) * Math.sin((t+v[3]**3)**2 ) / 3**t ) ))); break
+			case 19: R = scale * (t+v[3]**2) * Math.exp ( v[2] * (t+v[3]**2) * Math.sin((t+v[3]**2)**2 + (t+v[3]**2)) * v[2] / 2**t ); break
+			case 20: R = scale * v[0] * Math.sin(v[4]*t)**v[2] / Math.log((v[3]**2)*t)**v[1]; break
+			default: R = scale * v[0] * t**(v[1]/v[2])
+		}
+		X = Xo + R*Math.cos(t); Y = Yo + R*Math.sin(t)
+		ctx.fillStyle = ink
+		ctx.fillRect(X,Y,pix,pix)
+		t += dt
+	}
+}
+
+init()
+var h = setInterval(main, delay)
+
+function main() {
+	for (var q = 0; q <= pars; q++) {
+		v[q] += dv[q]
+		if (Math.abs(v[q]) > edge) {dv[q] *= -1}
+	}
+	ctx.clearRect(0,0,dim,dim)
+	draw(ctx)
+	c++
+	ctx.fillStyle = "#00FF00"
+	ctx.font = "20px Courier";
+	ctx.fillText("object: " + obj + " [" + desc + "]",50,50);
+	ctx.fillText("points: " + points.toFixed(0),50,75);
+	ctx.fillText("zscale: " + scale.toFixed(2),50,100);
+	ctx.fillText("frames: " + c,50,125);
+	ctx.fillText("Δt: " + dt.toFixed(5),50,150);
+	for (var q = 0; q <= pars; q++) {
+		ctx.fillText("μ" + q + ": " + v[q].toFixed(5),50,175+q*25);
+	}
+}
+
+function init() {
+	for (var q = 0; q <= pars; q++) {
+		if (f) {
+			v[q] = Math.random()*edge
+			if (Math.random()*2>1) {v[q] *= -1}
+		}
+		tv[q] = Math.random()*edge*3
+		if (Math.random()*2>1) {tv[q] *= -1}
+		dv[q] = (tv[q] - v[q])/grain
+	}
+}
+
+document.body.style.overflow = 'hidden'
+document.getElementById('stats').innerHTML = 'curves by @spiralbend ©2021'
+document.getElementById('stats').style.fontSize='20px'
+document.getElementById('stats').style.fontFamily='Arial'
+document.onkeydown = function(e) {
+
+// -,+ scale (zoom)
+// <,> # graph points
+// [,] plot density
+// 0-9,qwerty object selection
+// zxcvb color
+// ESC pause/resume
+// ENT Δ vector nudge
+// DEL n-space jump
+
+	switch (e.keyCode) { 
+		case 221:
+			dt *= 1.01
+			break
+		case 219:
+			dt /= 1.01
+			break
+		case 187:
+			scale *= 1.05
+			break
+		case 189:
+			scale /= 1.05
+			break
+		case 190:
+			points *= 1.1
+			break
+		case 188:
+			points /= 1.1
+			break
+		case 112: //f1
+			e.preventDefault()
+			points = 16000
+			grain = 75000
+			dt = 0.00811
+			f = false
+			init()
+			delay = 30
+			clearInterval(h)
+			h = setInterval(main, delay)
+			break
+		case 113: //f2
+			e.preventDefault()
+			points = dpts
+			grain = 35000
+			dt = ddt
+			f = false
+			delay = 15
+			clearInterval(h)
+			h = setInterval(main, delay)
+			init()
+			break
+		case 114: //f3
+			e.preventDefault()
+			pix -= 1
+			break
+		case 115: //f4
+			e.preventDefault()
+			pix += 1
+			break
+		case 116: //f5
+			e.preventDefault()
+			delay /= 1.1
+			clearInterval(h)
+			h = setInterval(main, delay)
+			break
+		case 117: //f6
+			e.preventDefault()
+			delay *= 1.1
+			clearInterval(h)
+			h = setInterval(main, delay)
+			break
+		case 13: //enter
+			f = false
+			init()
+			break
+		case 8: //delete
+			f = true
+			init()
+			break
+		case 27:
+			if(stopped) {
+				h = setInterval(main, delay)
+				stopped = false
+			} else {
+				clearInterval(h)
+				stopped = true
+			}
+			break
+		case 49:
+			obj=1
+			scale=40
+			desc = "heavy metallicity"
+			break
+		case 50:
+			obj=2
+			scale=40
+			desc = "occulted crystalline"
+			break
+		case 51:
+			obj=3
+			scale=40
+			desc = "neutron star"
+			break
+		case 52:
+			obj=4
+			scale=40
+			desc = "quantum baseline"
+			break
+		case 53:
+			obj=5
+			scale=120
+			desc = "gamma ray burst"
+			break
+		case 54:
+			obj=6
+			scale=220
+			desc = "spike proteins"
+			break
+		case 55:
+			obj=7
+			scale=350
+			desc = "antimatter jellyfish"
+			break
+		case 56:
+			obj=8
+			scale=600
+			desc = "plasma ball"
+			break
+		case 57:
+			obj=9
+			scale=300
+			desc = "ion nebula"
+			break
+		case 48:
+			obj=10
+			scale=320
+			desc = "tidal disruption"
+			break;
+		case 81: //q
+			obj=11
+			scale=200
+			desc = "event horizon"
+			break
+		case 87: //w
+			obj=12
+			scale=60
+			desc = "chaotic resonance"
+			break
+		case 69: //e
+			obj=13
+			scale=400
+			desc = "string theory"
+			break
+		case 82: //r
+			obj=14
+			scale=350
+			desc = "fuzzy math"
+			break
+		case 84: //t
+			obj=15
+			scale=350
+			desc = "double helix"
+			break
+		case 89: //y
+			obj=16
+			scale=400
+			desc = "coriolis effect"
+			break
+		case 85: //u
+			obj=17
+			scale=650
+			desc = "grand design"
+			break
+		case 73: //i
+			obj=18
+			scale=3
+			desc = "galactic embryo"
+			break
+		case 79: //o
+			obj=19
+			scale=5
+			desc = "spindle groove"
+			break
+		case 80: //p
+			obj=20
+			scale=50
+			desc = "punctuated equilibrium"
+			break
+		case 90: //z red
+			ink="#FF0000"
+			break
+		case 88: //x green
+			ink="#00FF00"
+			break
+		case 67: //c blue
+			ink="#0000FF"
+			break
+		case 86: //v cyan
+			ink="#00FFFF"
+			break
+		case 66: //b magenta
+			ink="#FF00FF"
+			break
+		case 78: //n yellow
+			ink="#FFFF00"
+			break
+		case 77: //m white
+			ink="#FFFFFF"
+			break
+		}
+	}
+});
+</script>
+<style type="text/css">
+	#thiscanvas {border:0px solid;position:absolute;top:0px;background-color:black;}
+</style>
+</head>
+<p id="stats"></p>
+<body style="position:relative;" bgcolor="black">
+<canvas id="thiscanvas" width = 6000, height = 6000>
+</canvas>
+Wot's... Uh the Deal?
+</body>
+</html>

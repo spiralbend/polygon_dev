@@ -1,0 +1,32 @@
+		//case 0:  R = 200 + v[0] * Math.cos(v[1] * th / ph) + th * Math.sin(v[2] * ph * ph) + v[3] * ph * Math.cos(v[4] * th * th) + v[7] * Math.sin(v[5] * (th * ph)); break //slick but slow
+		//case 0:  R = 200 + v[0] * Math.cos(v[1]**2 * th / ph) + th * Math.sin(v[2]**2 * ph * ph) + v[3] * ph * Math.cos(v[4]**2 * th * th); break //similar to mass ejection
+		//case 0:  R = 6 * ( 30 + Math.cos(v[1] * th * ph) + v[2] * Math.sin(v[1] * 0.2 * (th + ph) * th) ); break //nice ripples but too slow
+		//case 0:  R = 120 * (Math.sin(Math.cosh(v[4]*th))/v[0] * Math.cos(Math.sinh(ph)**v[5])); break //frenetic
+		
+				//case 0:  R = 300; break
+		//case 0:  R = 50 * (ph+th) * Math.sin(Math.tan(ph*Math.cos(v[1]*th) * th*Math.cos(v[2]*ph))); break //mushroom horns proto gas giant
+		//case 0:  R = 30 * (ph * v[0] * Math.sin(th) + th * Math.cos(v[0] * ph)) + v[1] * Math.log(Math.sin(v[2] * (ph+th))); break //umcool
+		//case 0:  R = 30 * (ph * v[0] * Math.sin(th) + th * Math.cos(v[0] * ph)) + v[1] * Math.log(Math.sin(v[2] * (ph*th))); break //tiger stripey good1
+		//case 0:  R = 30 * (ph * v[0] * Math.sin(th) + th * Math.cos(v[0] * ph)) + v[1] * Math.log(Math.sin(v[2] * (ph/th))); break //scales on f1
+		//case 0:  R = 30 * (ph * v[0] * Math.sin(th) + th * Math.cos(v[0] * ph)) + v[1] * Math.log(Math.sin(v[2] * (ph*th))**v[3]); break //orange peel
+		//case 0:  R = 300 * Math.sin(Math.sin(v[0] * ph * th)); break //like a catseye marble same as below
+		//case 0:  R = 300 * Math.cos(Math.sin(v[0] * ph * th)); break //similar but less sphere-y shmoo
+		//case 0:  R = 300 * Math.cos(v[0] * Math.sin(v[1] * ph +  v[2] * th)); break //growy spindles simpler gas giant f1
+		//case 0:  R = 300 * Math.cos(v[3]**2 * th * Math.log(10 + v[0] * Math.sin(v[1] * ph +  v[2] * th))); break //super squiggles cycles quick to sphere on f1
+		//case 0:  R = 100 + 300 * Math.cos(ph + v[3]**2 * Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th))); break //cool even notf1 reduce noise
+		//case 0:  R = 1000 + Math.sin(ph * v[2] * Math.cos(ph*Math.log(v[8]*th*v[0]**2)) + th * v[3] * Math.cos(th*Math.log(v[7]*ph*v[1]**2)) + v[5]*Math.sin(v[4]*Math.log(v[6]*th*ph))) //yetanotherblob
+		//case 0:  R = 300 * Math.cos(Math.cos(ph * v[3])) + v[4] * Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th)); break //spike proteins
+		//case 0:  R = 100 * Math.log( 10 + Math.sin( v[1]*ph*Math.sin( v[0]*th ))); break //stringy ball symetric ripples
+		//case 0:  R = 125 * Math.log( 10 + v[2]*(th/(ph+0.1))*Math.sin( v[1]*ph*Math.sin( v[0]*th ))); break //cool smoke planet & strings
+		//case 0:  R = 75 * (2+Math.sin(v[3]**2)) * Math.log( 10 + v[2]*(th/(ph+0.1))*Math.sin( v[1]*ph*Math.sin( v[0]*th ))); break //swiss family throbinson
+		//case 0:  R = 60 * Math.sqrt( 10 + v[0] * Math.cos(v[1]*(th+ph))**3 - v[2] * Math.cos(v[3]*(th*ph*v[8]))**2 + v[4] * Math.cos(v[5]*(ph*th)) - v[6]) + (th+ph)*v[7]**2; break //done here dimsum
+		//case 0:  R = 300 * Math.sin( ph + Math.cos( th + Math.sin( v[0] * (ph + th) ))); break //brainiac
+		//case 0:  R = 300 * Math.cos(v[0] * Math.sin(v[0] * ph * th)); break
+		//case 0:  R = 300 * Math.cos(v[0] * Math.log(v[0]**2 * (ph * th) + 1)) + ph*th*v[1]; break //dancer
+
+		//case 0:  R = 300 * Math.cos(v[3]**2 * Math.log(10 + v[0] * Math.sin(v[1] * ph +  v[2] * th))); break //good but symetric f1 ***goodone
+		//case 0:  R = 100 + 150 * Math.cos(th + v[3]**2) * Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th)); break //squidsy notf1 ***goodone
+		//case 0:  R = 300 * Math.cos(Math.cos(th + v[3]**2)) + v[4] * Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th)); break //super squid f1 ***goodone+
+		//case 0:  R = 125 * Math.log( 10 + v[2]*Math.sin( v[1]*ph*Math.sin( v[0]*th ))); break //wicked stringy ***goodone
+		//case 0:  R = 25 * ( v[0] * Math.cos(v[1]*(th+ph))**3 + v[2] * Math.cos(v[3]*(th*ph))**2 + v[4] * Math.cos(v[5]*(Math.sqrt(ph*th))) + v[6] ); break //very cool, can vary ***goodone
+		//case 0:  R = 20*(12 + Math.sin(v[0]*Math.cos(v[1] * (v[8]*th/ph+v[2]*v[6]))) - Math.cos(-1*v[3]*Math.sin(v[4] * (v[9]*ph-th+v[5]*v[7])))); break

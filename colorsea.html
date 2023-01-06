@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Canvas</title>
+   </head>
+   <body>
+      <canvas id="newCanvas" width="2000" height="2000" style="background-color:black;"></canvas>
+      <script>
+        var canvas = document.getElementById("newCanvas");
+        var ctx = canvas.getContext("2d");
+		var ofx = 300, ofy = 900
+
+		for (let i=0; i<256; i++) {
+			for (let j=0; j<256; j++) {
+				ctx.fillStyle = rgb(255-j,255-i,0)
+				ctx.fillRect(ofx+i,ofy+j,1,1)
+				ctx.fillRect(ofx+511-i,ofy+j,1,1)
+			}
+		}
+
+		for (let i=0; i<256; i++) {
+			for (let j=0; j<256; j++) {
+				ctx.fillStyle = rgb(255,255-i,255-j)
+				ctx.fillRect(ofx+i,ofy+j-256,1,1)
+				ctx.fillRect(ofx+511-i,ofy+j-256,1,1)
+			}
+		}
+
+		for (let i=0; i<256; i++) {
+			for (let j=0; j<256; j++) {
+				ctx.fillStyle = rgb(j,255-i,255)
+				ctx.fillRect(ofx+i,ofy+j-256*2,1,1)
+				ctx.fillRect(ofx+511-i,ofy+j-256*2,1,1)
+			}
+		}
+		
+		for (let i=0; i<256; i++) {
+			for (let j=0; j<256; j++) {
+				ctx.fillStyle = rgb(0,255-i,j)
+				ctx.fillRect(ofx+i,ofy+j-256*3,1,1)
+				ctx.fillRect(ofx+511-i,ofy+j-256*3,1,1)
+			}
+		}
+
+		function rgb(r, g, b) {
+			return "rgb("+r+","+g+","+b+")";
+		}
+
+      </script>
+   </body>
+</html>

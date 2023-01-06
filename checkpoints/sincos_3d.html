@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>SinCos_3D</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+				<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body bgcolor=black>
+		<div id="hud">initializing field state<br>
+		</div>
+
+<script type="module">
+document.body.style.overflow = 'hidden'
+
+import * as THREE from './three.js/build/three.module.js';
+import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
+
+let windowHalfX = window.innerWidth / 2;
+let windowHalfY = window.innerHeight / 2;
+let container, camera, scene, renderer;
+var points, geometry, controls, animid;
+
+var nobs = 1
+var obj = 23
+var pix = 2
+var grain = 90000; var edge = 16; var dt = 0.0085; var dr = 0.008
+
+const rev = Math.round(2 * Math.PI / dr)
+const THETA = Math.PI
+const PHI = 2 * Math.PI
+
+var numParticles, positions, colors, noise
+const objects = Array.from(Array(3),() => new Array(3))
+var noise = [] //new Array(numParticles*3)
+	
+var frames = 0; var pars = 9; var zoom = 1; var rotate = true; var ny = 1
+var v = new Array(pars); var w = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
+var numColors = 10000; var colorspeed = 0.25; var argb = new Array(3); var drgb = new Array(3)
+var stopped = false; var clean = false
+var palet = Array.from(Array(3),() => new Array(numColors))
+
+init();
+animate();
+
+function render() {
+
+	if (rotate) {
+		points.rotateX(dr);
+		if ((frames % rev) < 40) { points.rotateY(dr/2); }
+	}
+
+	camera.lookAt( scene.position );
+
+	var positions = points.geometry.attributes.position.array;
+	var colors = points.geometry.attributes.color.array;
+
+	let i = 0;
+
+	for ( let th = 0; th < THETA; th += dt ) {
+		for ( let ph = 0; ph < PHI; ph += dt ) {
+
+			let r = zoom * radius(obj,th,ph)
+			let Z = Math.floor(Math.abs(r)) % numColors
+			
+			positions[i] = r * Math.cos(ph) * Math.sin(th) + noise[i] * ny
+			positions[i + 1] = r * Math.sin(ph) * Math.sin(th) + noise[i + 1] * ny
+			positions[i + 2] = r * Math.cos(th) + noise[i+2] * ny
+			// positions[i] = r * Math.cos(ph)
+			// positions[i + 1] = r * Math.sin(ph)
+			// positions[i + 2] = 0
+
+			colors[i] = palet[0][Z]
+			colors[i + 1] = palet[1][Z] 
+			colors[i + 2] = palet[2][Z]
+			
+			i += 3;
+
+		}
+
+	}
+
+	points.geometry.attributes.position.needsUpdate = true;
+	points.geometry.attributes.color.needsUpdate = true;
+
+	renderer.render( scene, camera );
+	
+	label();
+	frames++;
+	
+	for (i = 0; i < colorspeed; i++) {
+		for (var j = 0; j < 3; j++) {
+			argb[j] += drgb[j]
+		}
+		for (var j = 0; j < 3; j++) {
+			if      (argb[j] < 0.15) { argb[j] = 0.15; drgb[j] *= -1 }
+			else if (argb[j] > 1.0)  { argb[j] = 1.0;  drgb[j] *= -1 }
+			palet[j].unshift(argb[j]); palet[j].pop()
+		}
+	}
+
+}
+
+function animate() {
+
+	animid = requestAnimationFrame( animate );
+	controls.update(); 
+	render();
+	
+	for (var q = 0; q <= pars; q++) {
+		w[q] += dv[q]
+		v[q] = edge * Math.sin(w[q])
+	}
+
+}
+
+function radius(obj,th,ph) {
+	let R
+	switch (obj) {
+		
+		case 1:  R = objects[obj][1] * Math.abs( v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 100; break
+		case 2:  R = objects[obj][1] * v[0] * Math.sin(Math.log(v[1]**2*th)) + v[3] * Math.cos(v[2]**2*ph**v[4]) + v[6] * Math.sin(Math.exp(v[5]*th)); break
+		case 3:  R = objects[obj][1] * Math.abs(Math.cos(v[7]*th)+2) + objects[obj][1] * Math.abs(v[0] * Math.sin(v[1]*th) + v[3] * Math.cos(v[4]*ph) + v[5]*Math.sin(th*ph+v[6])); break
+		case 4:  R = objects[obj][1] * (v[0] * Math.sin(v[1]*th) + v[3] * Math.cos(v[4]*ph)); break
+		case 5:  R = objects[obj][1] * (v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 200; break
+		case 6:  R = objects[obj][1] * Math.log( ph * Math.sin(v[1]*th)**v[2] + v[3] * th * Math.cos(v[4]*ph) ); break
+		case 7:  R = objects[obj][1] * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)); break
+		case 8:  R = objects[obj][1] * (Math.sin(v[1]*th) * Math.sin(v[3]*ph)) ** ((Math.cos(v[5]*th) * Math.cos(v[4]*ph))); break
+		case 9:  R = objects[obj][1] * (v[0] * Math.sin(v[1]*(th+v[7])) + v[3] * Math.cos(v[8]+ph)**v[5] + ph * Math.tan(v[6]*th)); break
+		//case 9:  R = objects[obj][1] * (v[0] * Math.sin(v[1]*ph) + v[3] * Math.cos(ph)**v[5] + Math.tan(v[6]*ph)); break
+		case 10: R = objects[obj][1] * Math.tan(Math.sin(v[1]*th)) ** Math.tan(Math.cos(v[4]*ph)**v[5]); break
+		case 11: R = objects[obj][1] * Math.exp( (v[0] * Math.sin(v[1]*th))**v[2] + (v[3] * Math.cos(v[4]*ph))**v[5] ); break
+		case 12: R = objects[obj][1] * (v[0] * Math.sin(v[1]*(th+ph))**v[2] + v[3] * Math.cos(v[4]*ph*th)**v[5]); break
+		case 13: R = objects[obj][1] * Math.exp( v[0] * Math.sin(v[1]*th) * v[2] * Math.cos(v[3]*ph) / (v[4]*th) ); break
+		case 14: R = objects[obj][1] * Math.exp( v[2] * Math.tan(v[3]*th) / (ph+v[0]) ); break
+		case 15: R = objects[obj][1] * Math.exp (( v[0] * Math.sin(v[1]*th)**v[2] / ph ) * ( v[3] * Math.sin(v[4]*ph)**v[5] / th )); break
+		case 16: R = objects[obj][1] * v[0] * Math.exp( -1 * Math.abs(v[1]*Math.sin(v[2]*th) ** Math.cos(v[3]*ph)) ); break
+		case 17: R = objects[obj][1] * Math.exp( -1 * Math.abs(v[0]*Math.sin(v[1]*th) ** Math.cos(v[1]*ph)) ); break
+		case 18: R = objects[obj][1] * v[6] * Math.exp( Math.sin((th*v[0]) * (ph**2) * Math.exp ( (th+ph)**2 * Math.sin((ph*v[3])**2) )) ); break
+		case 19: R = objects[obj][1] * v[0] * Math.exp((Math.sin(v[1]*th) * Math.cos(ph)**v[5]))**Math.tan(v[5]*th); break
+		case 20: R = objects[obj][1] * v[0] * Math.exp((Math.sin(v[1]*(th+ph)) * Math.cos(th+ph)**v[5]))**Math.tan(v[5]*ph*th);; break
+		case 21: R = objects[obj][1] * Math.abs(v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph)**v[8] + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th)**v[9]) + 120; break
+		case 22: R = objects[obj][1] * ph * Math.sin(v[1]*th) ** (th * Math.cos(v[4]*ph)); break
+		case 23: R = 300; break
+		//case 23: R = objects[obj][1] * 500 * (ph * Math.sinh(v[1]*th)) ** (th * Math.cosh(v[4]*ph)); break
+		default: R = 150; break
+	}
+	return R
+}
+
+function makeObjects() {
+	objects[0]  = ["basic resonator", 10]
+	objects[1]  = ["spacetime manifold", 30]
+	objects[2]  = ["mass ejection", 60]
+	objects[3]  = ["probability field", 16]
+	objects[4]  = ["harmonic resonance", 25]
+	objects[5]  = ["quantum baseline", 6]
+	objects[6]  = ["spike proteins", 150]
+	objects[7]  = ["antimatter jellyfish", 180]
+	objects[8]  = ["plasma ball", 200]
+	objects[9]  = ["wormhole topology", 10]
+	objects[10] = ["tidal disruption", 320]
+	objects[11] = ["event horizon", 200]
+	objects[12] = ["unstable nucleus", 15]
+	objects[13] = ["string theory", 300]
+	objects[14] = ["metric tensor", 350]
+	objects[15] = ["double helix", 250]
+	objects[16] = ["coriolis effect", 400]
+	objects[17] = ["grand design", 2500]
+	objects[18] = ["galactic embryo", 50]
+	objects[19] = ["hypersurface gradient", 40]
+	objects[20] = ["braincast", 25]
+	objects[21] = ["range anomaly", 10]
+	objects[22] = ["logic bomb", 100]
+	objects[23] = ["working title", 1]
+}
+
+function flip() {
+	if (Math.random() > 0.5) {
+		return 1
+	} else {
+		return -1
+	}
+}
+
+function makeGeometry() {
+	numParticles = Math.round( (THETA * PHI) / dt**2 )
+
+	var positions = new Array(numParticles*3)
+	var colors = new Array(numParticles*3)
+
+	
+	var geometry = new THREE.BufferGeometry();
+	const sprite = new THREE.TextureLoader().load( './three.js/examples/textures/sprites/circle.png' );
+	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+	var material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
+	points = new THREE.Points( geometry, material );
+	scene.add( points );
+	//points.rotateY(Math.PI/4);
+	for (var i = 0; i < numParticles*3; i += 3) {
+		noise[i] = Math.random() * flip() / 2
+		noise[i+1] = Math.random() * flip() / 2
+		noise[i+2] = Math.random() * flip() / 2
+	}
+}
+
+function init() {
+	setup();
+
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
+	camera.position.set( 0, 0, 1000 );
+	scene = new THREE.Scene();
+
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	container.appendChild( renderer.domElement );
+
+	controls = new OrbitControls( camera, renderer.domElement );
+	controls.enableDamping = true;
+	controls.dampingFactor = 0.05;
+	controls.screenSpacePanning = true;
+
+	window.addEventListener( 'resize', onWindowResize );
+	colormap();
+	makeObjects();
+	makeGeometry();
+}
+
+function colormap() {
+	for (var i = 0; i < 3; i++) {
+		argb[i] = Math.random()
+		drgb[i] = Math.random() * 0.0051
+		if (Math.random()*2 > 1) { drgb[i] *= -1 }
+	}
+	for (var i = 0; i <= numColors; i++) {
+		for (var j = 0; j < 3; j++) {
+			argb[j] += drgb[j]
+		}
+		for (var j = 0; j < 3; j++) {
+			if      (argb[j] < 0.15) { argb[j] = 0.15; drgb[j] *= -1 }
+			else if (argb[j] > 1.0) { argb[j] = 1.0; drgb[j] *= -1 }
+			palet[j][i] = argb[j]
+		} 
+	}
+	for (var j = 0; j < 3; j++) {
+		argb[j] = palet[j][0]
+	}
+}
+
+function setup() {
+	for (var q = 0; q <= pars; q++) {
+		w[q] = Math.random()*edge
+		if (Math.random()*2>1) { w[q] *= -1 }
+		tv[q] = Math.random()*edge*3
+		if (Math.random()*2>1) { tv[q] *= -1 }
+		dv[q] = (tv[q] - w[q]) / grain
+		v[q] = edge * Math.sin(w[q])
+	}
+}
+
+function label() {
+	var bp = "<font color=#00FF00 face=Courier size=5>"
+	document.getElementById('hud').innerHTML = "";
+	if (clean) return -1
+	document.getElementById('hud').innerHTML += bp + "object: " + objects[obj][0] + " [" + obj + "]</font><br>";
+	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "zscale: " + objects[obj][1] + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "frames: " + frames + "</font><br><br>";
+	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;" + dt.toFixed(5) + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "+-+-+-+-+-+-+</font><br>";
+	var sp, sd;
+	for (var q = 0; q <= pars; q++) {
+		if (v[q] < 0) { sp = "" } else { sp = "&nbsp;" }
+		if (Math.abs(v[q]) < 10) { sd = "&nbsp" } else { sd = "" }
+		document.getElementById('hud').innerHTML += bp + "μ" + q + ": " + sp + sd + v[q].toFixed(5) + "</font><br>";
+	}
+}
+
+function onWindowResize() {
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+document.onkeydown = function(e) {
+	switch (e.keyCode) { 
+		case 8: e.preventDefault(); setup(); break //delete
+		case 9: e.preventDefault(); obj = Math.round( Math.random() * objects.length ); break //TAB
+		case 187: zoom *= 1.05; break //+
+		case 189: zoom /= 1.05; break //-
+		case 112: e.preventDefault(); pix = 3; grain = 30000; edge = 5; dt = 0.015; dr = 0.002; scene.remove( points ); setup(); makeGeometry(); break //f1
+		case 113: e.preventDefault(); pix = 2; grain = 90000; edge = 16; dt = 0.0085; dr = 0.008; scene.remove( points ); setup(); makeGeometry(); break //f2		
+		case 114: e.preventDefault(); pix--; if (pix<1) {pix = 1;} scene.remove( points ); makeGeometry(); break //f3
+		case 115: e.preventDefault(); pix++; scene.remove( points ); makeGeometry(); break //f4
+		case 49: obj = 1;  break //1
+		case 50: obj = 2;  break //2
+		case 51: obj = 3;  break //3
+		case 52: obj = 4;  break //4
+		case 53: obj = 5;  break //5
+		case 54: obj = 6;  break //6
+		case 55: obj = 7;  break //7
+		case 56: obj = 8;  break //8
+		case 57: obj = 9;  break //9
+		case 48: obj = 10; break //0
+		case 81: obj = 11; break //q
+		case 87: obj = 12; break //w
+		case 69: obj = 13; break //e
+		case 82: obj = 14; break //r
+		case 84: obj = 15; break //t
+		case 89: obj = 16; break //y
+		case 85: obj = 17; break //u
+		case 73: obj = 18; break //i
+		case 79: obj = 19; break //o
+		case 80: obj = 20; break //p
+		case 90: obj = 21; break //z
+		case 88: obj = 22; break //x
+		case 67: obj = 23; break //x
+		case 68: colormap(); break //d shuffle palet
+		case 32: //space reverse time
+			e.preventDefault()
+			for (var q = 0; q <= pars; q++) {
+				dv[q] *= -1
+			}
+			dr *= -1
+			break
+		case 27: //ESC stop
+			if(stopped) {
+				animate()
+				stopped = false
+			} else {
+				cancelAnimationFrame(animid);
+				stopped = true
+			}
+			break
+		case 76: //l label on/off
+			if(clean) {
+				clean = false
+			} else {
+				clean = true
+			}
+			break
+		case 83: //s noise
+			// if(ny) {
+				// ny = 0
+			// } else {
+				// ny = 1
+			// }
+			ny = (ny + 1) % 6
+			break
+		case 65: //a rotate on/off
+			if(rotate) {
+				rotate = false
+			} else {
+				rotate = true
+			}
+			break
+		}
+	}
+		</script>
+	</body>
+</html>
