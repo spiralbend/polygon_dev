@@ -22,7 +22,7 @@ const objects = Array.from(Array(3),() => new Array(3)); var noise = []; var nit
 var frames = 0; var pars = 9; var rotate = false; var ny = 0; var time = 0; var wait = 0
 var v = new Array(pars); var w = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
 var numColors = 50000; var colorspeed = 0.25; var argb = new Array(3); var drgb = new Array(3)
-var stopped = false; var clean = false; var soundOn = false; var discrete = true; var dorando = false
+var stopped = false; var clean = true; var soundOn = false; var discrete = true; var dorando = false
 var palet = Array.from(Array(3),() => new Array(numColors))
 var colorx = 512, colory = 1024, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -52,8 +52,8 @@ function makeGeometry() {
 	const map = new THREE.TextureLoader().load('files/uvgrid.jpg');
 
 	//var material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	//var material = new THREE.MeshPhongMaterial( { specular: 0x000100, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
-	var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	var material = new THREE.MeshPhongMaterial( { specular: 0xF11100, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
+	//var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	//var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true } );
 	
 	//points = new THREE.Points( geometry, material );

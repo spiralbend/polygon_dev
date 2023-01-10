@@ -21,7 +21,7 @@ const rev = Math.round(2 * Math.PI / dr)
 const THETA = 2*Math.PI/3; const PHI = 2*Math.PI/3
 
 var numParticles, numP3, positions, colors, noise, audioContent, audioStream, analyser, frequencyArray
-const objects = Array.from(Array(3),() => new Array(3)); var noise = []; var nits = []
+const objects = Array.from(Array(3),() => new Array(3)); var noise = []; var nits = []; var uvs = []
 
 var frames = 0; var pars = 9; var zoom = 1; var rotate = true; var ny = 0; var time = 0; var wait = 0
 var v = new Array(pars); var w = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
@@ -123,6 +123,18 @@ function render() {
 
 }
 
+function makeUVs () {
+	let i=0, j=1
+	for (let k=0; k<hpts; k++) {
+		for (let l=0; l<wpts; l++) {
+			uvs.push(i,j);
+		 	i += 1/(wpts - 1)
+		}
+		j -= 1/(hpts - 1)
+		i = 0
+	}
+}
+
 function animate() {
 
 	animid = requestAnimationFrame( animate );
@@ -139,73 +151,16 @@ function animate() {
 }
 
 function radius(obj,th,ph) {
-
 	let R
 	switch (obj) {
-
-		case 1:  R = objects[obj][1] * Math.abs( v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 100; break
-		case 2:  R = objects[obj][1] * Math.sin(Math.log(v[1]**2*th)) + v[3] * Math.cos(v[2]**2*ph**v[4]) + v[6] * Math.sin(Math.exp(v[5]*th)); break
-		case 3:  R = objects[obj][1] * Math.abs(Math.cos(v[7]*th)+2) + objects[obj][1] * Math.abs(v[0] * Math.sin(v[1]*th) + v[3] * Math.cos(v[4]*ph) + v[5]*Math.sin(th*ph+v[6])); break
-		case 4:  R = objects[obj][1] * (v[0] * Math.sin(v[1]*th) + v[3] * Math.cos(v[4]*ph)); break
-		case 5:  R = objects[obj][1] * (v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 200; break
-		case 6:  R = objects[obj][1] * Math.log( ph * Math.sin(v[1]*th)**v[2] + v[3] * th * Math.cos(v[4]*ph) ); break
-		case 7:  R = objects[obj][1] * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)); break
-		case 8:  R = objects[obj][1] * (Math.sin(v[1]*th) * Math.sin(v[3]*ph)) ** ((Math.cos(v[5]*th) * Math.cos(v[4]*ph))); break
-		case 9:  R = objects[obj][1] * (v[0] * Math.sin(v[1]*(th+v[7])) + v[3] * Math.cos(v[8]+ph)**v[5] + ph * Math.tan(v[6]*th)); break
-		case 10: R = objects[obj][1] * Math.tan(Math.sin(v[1]*th)) ** Math.tan(Math.cos(v[4]*ph)**v[5]); break
-		case 11: R = objects[obj][1] * Math.exp( (v[0] * Math.sin(v[1]*th))**v[2] + (v[3] * Math.cos(v[4]*ph))**v[5] ); break
-		case 12: R = objects[obj][1] * (v[0] * Math.sin(v[1]*(th+ph))**v[2] + v[3] * Math.cos(v[4]*ph*th)**v[5]); break
-		case 13: R = objects[obj][1] * Math.exp( v[0] * Math.sin(v[1]*th) * v[2] * Math.cos(v[3]*ph) / (v[4]*th) ); break
-		case 14: R = objects[obj][1] * Math.exp( v[2] * Math.tan(v[3]*th) / (ph+v[0]) ); break
-		case 15: R = objects[obj][1] * Math.exp (( v[0] * Math.sin(v[1]*th)**v[2] / ph ) * ( v[3] * Math.sin(v[4]*ph)**v[5] / th )); break
-		case 16: R = objects[obj][1] * v[0] * Math.exp( -1 * Math.abs(v[1]*Math.sin(v[2]*th) ** Math.cos(v[3]*ph)) ); break
-		case 17: R = objects[obj][1] * Math.exp( -1 * Math.abs(v[0]*Math.sin(v[1]*th) ** Math.cos(v[1]*ph)) ); break
-		case 18: R = objects[obj][1] * v[6] * Math.exp( Math.sin((th*v[0]) * (ph**2) * Math.exp ( (th+ph)**2 * Math.sin((ph*v[3])**2) )) ); break
-		case 19: R = objects[obj][1] * v[0] * Math.exp((Math.sin(v[1]*th) * Math.cos(ph)**v[5]))**Math.tan(v[5]*th); break
-		case 20: R = objects[obj][1] * v[0] * Math.exp((Math.sin(v[1]*(th+ph)) * Math.cos(th+ph)**v[5]))**Math.tan(v[5]*ph*th);; break
-		case 21: R = objects[obj][1] * Math.abs(v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph)**v[8] + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th)**v[9]) + 120; break
-		case 22: R = objects[obj][1] * ph * Math.sin(v[1]*th) ** (th * Math.cos(v[4]*ph)); break
-		case 23: R = objects[obj][1] * Math.abs(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.cos(v[8] * (th + ph)) )) + 100; break
-		case 24: R = objects[obj][1] * Math.log(ph) * Math.tan(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.log(v[8]**2 * (th + ph)) )); break
-		case 25: R = objects[obj][1] * Math.sqrt(5 + Math.abs(v[0]*Math.cos(v[7]*ph) + v[1]*Math.cos(v[6]*th) + v[2]*Math.cos(v[5]*ph+th) + v[3]*Math.cos(v[4]*th+ph) + v[4]*Math.cos(v[3]*(ph+th)) +
-				 v[5]*Math.cos(v[2]*th*ph) + v[6]*Math.cos(v[1]*ph)/(ph+3) + v[7]*Math.cos(v[0]*th)/(th+3))); break
-		case 26: R = objects[obj][1] * v[0]*Math.cos(v[1] * (th + ph))  + v[2]*Math.cos(v[3] * ph * th) + v[4]*Math.sin(v[5] * (th / ph)) + 100; break
 		default: R = 150; break
-
 	}
-
 	return R
-
 }
 
 function makeObjects() {
 	objects[0]  = ["GEOS", 10]
 	objects[1]  = ["spacetime manifold", 30]
-	objects[2]  = ["mass ejection", 350]
-	objects[3]  = ["probability field", 16]
-	objects[4]  = ["harmonic resonance", 35]
-	objects[5]  = ["quantum baseline", 8]
-	objects[6]  = ["spike proteins", 150]
-	objects[7]  = ["antimatter jellyfish", 180]
-	objects[8]  = ["plasma ball", 200]
-	objects[9]  = ["wormhole topology", 30]
-	objects[10] = ["tidal disruption", 320]
-	objects[11] = ["event horizon", 200]
-	objects[12] = ["unstable nucleus", 30]
-	objects[13] = ["string theory", 280]
-	objects[14] = ["metric tensor", 350]
-	objects[15] = ["double helix", 250]
-	objects[16] = ["coriolis effect", 400]
-	objects[17] = ["grand design", 2500]
-	objects[18] = ["galactic embryo", 50]
-	objects[19] = ["hypersurface gradient", 40]
-	objects[20] = ["braincast", 25]
-	objects[21] = ["range anomaly", 10]
-	objects[22] = ["logic bomb", 100]
-	objects[23] = ["gas giant", 260]
-	objects[24] = ["cosmic orchid", 140]
-	objects[25] = ["monkfish icecream", 90]
-	objects[26] = ["analytic continuation", 100]
 }
 
 function flip() {
@@ -227,21 +182,21 @@ function makeGeometry() {
 
 	numParticles = Math.round( (THETA * PHI) / dt**2 )
 	numP3 = numParticles * 3
-	var positions = new Array(numP3)
-	var colors = new Array(numP3)
-	//var geometry = new THREE.BufferGeometry();
-    var geometry = new THREE.SphereGeometry( 15, 32, 16 );
+	var positions = new Array(numP3), colors = new Array(numP3)
+    //makeUVs()
+	//const geometry = new THREE.BufferGeometry();
+    //const geometry = new THREE.SphereGeometry( 15, 64, 32 );
+    //const geometry = new THREE.DodecahedronGeometry( 15 );
+    //const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
+    const geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
 	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	const map = new THREE.TextureLoader().load('files/dockside.jpg');
+	const map = new THREE.TextureLoader().load('files/uvgrid.jpg');
 
 	//geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-	//var material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
+    var material = new THREE.MeshBasicMaterial( { map: map, wireframe: false, vertexColors: false } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true, vertexColors: true } );
-    //var material = new THREE.MeshBasicMaterial( { color: 0x000100, vertexColors: true, side: THREE.DoubleSide, flatShading: true } )
-	//var material = new THREE.MeshPhongMaterial( { specular: 0x000100, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
-	var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: true, side: THREE.DoubleSide } );
-	//var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true } );
+    //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, vertexColors: true } );
 
 	if (frames > 0) {
 		var x = points.rotation.x
@@ -254,27 +209,20 @@ function makeGeometry() {
 	scene.add( points );
 
 	if (frames > 0) { 
-	
 		points.rotateX(x);
 		points.rotateY(y);
 		points.rotateZ(z);
-	
 	} else {
-	
 		points.rotateY(Math.PI/4);
-	
 	}	
 	
 	for (var i = 0; i < numP3; i += 3) {
-		
 		noise[i]   = Math.random() * flip() / 4
 		noise[i+1] = Math.random() * flip() / 4
 		noise[i+2] = Math.random() * flip() / 4
-
 		nits[i]    = Math.random() * flip() / 500
 		nits[i+1]  = Math.random() * flip() / 500
 		nits[i+2]  = Math.random() * flip() / 500
-
 	}
 
 }
@@ -286,7 +234,7 @@ function init() {
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
-	camera.position.set( 0, 0, 1000 );
+	camera.position.set( 0, 0, 100 );
 	scene = new THREE.Scene();
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
