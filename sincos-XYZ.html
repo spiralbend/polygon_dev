@@ -29,7 +29,7 @@ var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
 
-var width = 15, height = 8, div = 16, delta = 1/div, h2 = (height-1)/2, w2 = (width-1)/2, h1 = -1*h2, w1 = -1*w2
+var width = 15, height = 15, div = 16, delta = 1/div, h2 = (height-1)/2, w2 = (width-1)/2, h1 = -1*h2, w1 = -1*w2
 var hpts = 1 + div*(height-1), wpts = 1 + div*(width-1)
 var grain = 1200; var pix = 2; var edge = 3; var zoom = 1; console.log(width, height, wpts, hpts)
 
@@ -49,12 +49,12 @@ function makeGeometry() {
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
 	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	//const map = new THREE.TextureLoader().load('files/sri.jpg');
+	const map = new THREE.TextureLoader().load('files/brix04.jpg');
 
-	//var material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	var material = new THREE.MeshPhongMaterial( { specular: 0xFFFFFF, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
-	//var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
-	//var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true } );
+	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
+	//const material = new THREE.MeshPhongMaterial( { specular: 0xFFFFFF, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
+	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true } );
 	
 	//points = new THREE.Points( geometry, material );
 	points = new THREE.Mesh( geometry, material );
@@ -81,8 +81,8 @@ function render() {
 		for ( let X = w1; X <= w2; X += delta ) {
 
 			//let Z = 0
-			let Z = (v[0]*Math.sin(v[1]*X+Y) + v[3]*Math.cos(v[2]*Y+X))/3
-			//let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
+			//let Z = (v[0]*Math.sin(v[1]*X+Y) + v[3]*Math.cos(v[2]*Y+X))/3
+			let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
 			//let Z = Math.log(Math.abs(Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])))
 			//let Z = Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])
 			//let Z = (v[3]*Math.sin(((X+w2)-(Y+h2))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X+w2))**(Y+h2))/(4+v[2]))))/2
@@ -146,6 +146,9 @@ function init() {
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
 	camera.position.set( 0, 0, 21 );
 	scene = new THREE.Scene();
+
+	const bg = new THREE.TextureLoader().load('files/milky.jpg')
+    scene.background = bg
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
