@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>sincos-XYZ</title>
+		<title>sincos_Disc</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="min.css">
@@ -13,14 +13,13 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight
 var points, geometry, controls, animid, windowHalfX, windowHalfY, ns, s
-const PI = Math.PI
 
 var nobs = 1; var obj = 0; var stat = 1; var dt = 0.005; var dr = 0.005
 
 var numParticles, numP2, numP3, positions, colors, uvs, noise, audioContent, audioStream, analyser, frequencyArray
 const objects = Array.from(Array(3),() => new Array(3)); var noise = []; var nits = []; var uvs = []
 
-var frames = 0; var pars = 9; var rotate = true; var ny = 0; var time = 0; var wait = 0
+var frames = 0; var pars = 9; var rotate = false; var ny = 0; var time = 0; var wait = 0
 var v = new Array(pars); var w = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
 var numColors = 50000; var colorspeed = 0.25; var argb = new Array(3); var drgb = new Array(3)
 var stopped = false; var clean = true; var soundOn = false; var discrete = true; var dorando = false
@@ -50,11 +49,11 @@ function makeGeometry() {
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
 	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	const map = new THREE.TextureLoader().load('files/brix04.jpg');
+	const map = new THREE.TextureLoader().load('files/sri.jpg');
 
 	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x404040, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
-	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	const material = new THREE.MeshPhongMaterial( { specular: 0x404040, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
+	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true } );
 	
 	//points = new THREE.Points( geometry, material );
@@ -88,13 +87,11 @@ function render() {
 			//let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
 			//let Z = Math.log(Math.abs(Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])))
 			//let Z = Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])
-			//let Z = (v[3]*Math.sin(((X+w2)-(Y+h2))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X+w2))**(Y+h2))/(4+v[2]))))/2
+			let Z = (v[3]*Math.sin(((X+w2)-(Y+h2))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X+w2))**(Y+h2))/(4+v[2]))))/2
 			//let Z = Y*Math.sin(X*v[0])+X*Math.cos(Y*v[1])
 			//let Z = (X+v[0])**2/v[2] + (Y-v[3])**2/v[1]
 			//let Z = X**2/v[2] + Y**2/v[1]
 			//let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1])
-			//let Z = Math.cos(Math.sin(v[2]*Math.cos(v[3]*Math.exp(-Math.abs(X/Y)+Math.PI)/(v[0]+4.1))))/10 + Math.sin(v[1]*X/1.2+Y)/PI// + v[3]*Math.sin(v[0]*X) //+ v[4]*Math.cos(v[1]*Y)
-			let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1]) + Math.sin(v[4]*X/1.2+Y)/PI
 
 			positions[i]     = zoom * X;
 			positions[i + 1] = zoom * Y;
