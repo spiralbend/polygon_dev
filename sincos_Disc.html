@@ -28,51 +28,50 @@ var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
 
-var r = 16, th = 2*PI, rpts = 200, thpts = 500, dvr = r/rpts, dvth = th/thpts
-var width = 13, height = 17, div = 23, delta = 1/div, h2 = (height-1)/2, w2 = (width-1)/2, h1 = -h2, w1 = -w2, hpts = 1 + div*(height-1), wpts = 1 + div*(width-1)
-var grain = 2500, pix = 2, edge = 3, zoom = 1
+var r = 16, th = 2*PI, rpts = 500, thpts = 500, dvr = r/rpts, dvth = th/thpts
+var grain = 2000, pix = 0.1, edge = 3, zoom = 1
 
 // START
 init()
 animate()
 
 function makeGeometry() {
-	numParticles = hpts * wpts
+	numParticles = thpts * (1 + rpts)
 	numP3 = numParticles * 3
-	//numP2 = numParticles * 2
 	console.log(numParticles, numP3)
-	var positions = new Array(numP3), colors = new Array(numP3)
-	makeUVs()
+	var positions = new Array(numP3), colors = new Array(numP3); makeUVs()
 	var geometry = new THREE.BufferGeometry();
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
-	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	const map = new THREE.TextureLoader().load('files/dockside.jpg');
 
+	//Point Cloud 
+	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
 	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	const material = new THREE.MeshPhongMaterial( { specular: 0x404040, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
-	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
-	
 	//points = new THREE.Points( geometry, material );
+
+	const map = new THREE.TextureLoader().load('files/brix03.jpg');
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
+	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
+	
+
 	points = new THREE.Mesh( geometry, material );
 	scene.add( points )
-	points.rotateX(-PI/4)
+	points.rotateX(-PI/3)
 
 	var indices = []
-	let p1 = 0, p2 = 1, p3 = rpts+1
+	let p1 = 0, p2 = 1, p3 = rpts+2
 	for (let j = 0; j < thpts-1; j++) { 
-    	indices.push(p1, p2, p3); console.log(p1, p2, p3)
+    	indices.push(p1, p2, p3)
     	for (let i = 0; i < rpts-1; i++) {
 			let jp = j*rpts
-        	indices.push(i+jp+1, rpts+2+jp+i, rpts+1+jp+i); console.log(i+jp+1, rpts+2+jp+i, rpts+1+jp+i)
-        	indices.push(i+jp+1, 2+jp+i, rpts+2+jp+i); console.log(i+jp+1, 2+jp+i, rpts+2+jp+i)
+        	indices.push(i+j+jp+1, rpts+i+j+jp+3, rpts+i+j+jp+2)
+        	indices.push(i+j+jp+1,      i+j+jp+2, rpts+i+j+jp+3)
 	    }
-    	p2 += rpts; p3 += rpts
+    	p2 += rpts+1; p3 += rpts+1
 	}
     geometry.setIndex(indices)
-	//console.log(indices)
 }
 
 function render() {
@@ -81,18 +80,20 @@ function render() {
 	
 	if (rotate) { points.rotateZ(dr) }
 	let theta = 0
-	for ( let thc = 0; thc < thpts; thc++) {
+	for ( let thc = 0; thc < thpts+1; thc++) {
 		let radius = 0
-		for ( let rc = 0; rc < rpts; rc++ ) {
+		for ( let rc = 0; rc <= rpts; rc++ ) {
 
-			//let R = Math.sqrt(X*X+Y*Y)+Math.PI+0.5
+			let R = radius
 			let X = radius * Math.cos(theta)
 			let Y = radius * Math.sin(theta)
 			let Z = v[3]*Math.sin(radius*v[0])/radius + Math.cos(v[1]*X+Y)/(v[2]+3.5)
+			//let Z = Math.sin(v[0]*radius)
 			//let Z = 0
+
 			//let Z = (v[0]*Math.sin(v[1]*X+Y) + v[3]*Math.cos(v[2]*Y+X))/3
 			//let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
-			//let Z = Math.log(Math.abs(Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])))
+			//let Z = Math.log(Math.abs(Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1]))) //frenetic
 			//let Z = Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])
 			//let Z = (v[3]*Math.sin(((X+w2)-(Y+h2))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X+w2))**(Y+h2))/(4+v[2]))))/2
 			//let Z = Y*Math.sin(X*v[0])+X*Math.cos(Y*v[1])
@@ -105,6 +106,8 @@ function render() {
 			positions[i]     = zoom * X;
 			positions[i + 1] = zoom * Y;
 			positions[i + 2] = zoom * Z
+
+			//if (frames == 5) {console.log(positions[i], positions[i+1], positions[i+2])}
 			
 			// let r = Math.sqrt(X**2 + Y**2 + Z**2); 
             // let zc = Math.floor(Math.abs(r)) % numColors;
@@ -134,6 +137,7 @@ function render() {
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
 	points.geometry.computeVertexNormals()
+
 	renderer.render( scene, camera );
 	label()
 	frames++; wait--
@@ -185,13 +189,13 @@ function init() {
 }
 
 function makeUVs () {
-	let i=0, j=1
-	for (let k=0; k<hpts; k++) {
-		for (let l=0; l<wpts; l++) {
-			uvs.push(i,j);
-		 	i += 1/(wpts - 1)
+	let i=0, j=0
+	for (let k=0; k<thpts; k++) {
+		for (let l=0; l<=rpts; l++) {
+			uvs.push((i*Math.cos(j)+0.5), (i*Math.sin(j)+0.5));
+		 	i += 1/(2*rpts)
 		}
-		j -= 1/(hpts - 1)
+		j += 2*PI/(thpts)
 		i = 0
 	}
 }
