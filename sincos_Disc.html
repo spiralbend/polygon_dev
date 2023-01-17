@@ -30,9 +30,8 @@ var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
 
-var width = 13, height = 17, div = 23, delta = 1/div, h2 = (height-1)/2, w2 = (width-1)/2, h1 = -h2, w1 = -w2
-var hpts = 1 + div*(height-1), wpts = 1 + div*(width-1)
-var grain = 1000; var pix = 2; var edge = 3; var zoom = 1; console.log(width, height, wpts, hpts); console.log(delta, w1, w2, h1, h2)
+var width = 13, height = 17, div = 23, delta = 1/div, h2 = (height-1)/2, w2 = (width-1)/2, h1 = -h2, w1 = -w2, hpts = 1 + div*(height-1), wpts = 1 + div*(width-1)
+var grain = 1000, pix = 2, edge = 3, zoom = 1
 
 // START
 init()
@@ -64,15 +63,14 @@ function makeGeometry() {
 	var indices = []
 	let p1 = 0, p2 = wpts, p3 = 1
 	for (let j = 1; j < hpts; j++) { 
-    	indices.push(p1, p2, p3); //console.log(p1, p2, p3)
+    	indices.push(p1, p2, p3)
     	for (let i = 1+p1; i < (wpts+p1); i++) {
-        	indices.push(i, wpts+i-1, wpts+i); //console.log(i, wpts+i-1, wpts+i)
-        	if ((i+1) % wpts != 0) {indices.push(i, wpts+i, i+1);} //console.log(i, wpts+i, i+1)}
+        	indices.push(i, wpts+i-1, wpts+i)
+        	if ((i+1) % wpts != 0) {indices.push(i, wpts+i, i+1)}
 	    }
     	p1 += wpts; p2 += wpts; p3 += wpts
 	}
     geometry.setIndex(indices)
-	//console.log(indices)
 }
 
 function render() {
@@ -96,6 +94,8 @@ function render() {
 			//let Z = (X+v[0])**2/v[2] + (Y-v[3])**2/v[1]
 			//let Z = X**2/v[2] + Y**2/v[1]
 			//let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1])
+			//let Z = Math.cos(Math.sin(v[2]*Math.cos(v[3]*Math.exp(-Math.abs(X/Y)+Math.PI)/(v[0]+4.1))))/10 + Math.sin(v[1]*X/1.2+Y)/PI// + v[3]*Math.sin(v[0]*X) //+ v[4]*Math.cos(v[1]*Y)
+			//let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1]) + Math.sin(v[4]*X/1.2+Y)/PI
 
 			positions[i]     = zoom * X;
 			positions[i + 1] = zoom * Y;
