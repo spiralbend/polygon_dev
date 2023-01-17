@@ -50,7 +50,7 @@ function makeGeometry() {
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
 	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	const map = new THREE.TextureLoader().load('files/brix04.jpg');
+	const map = new THREE.TextureLoader().load('files/brix03.jpg');
 
 	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	//const material = new THREE.MeshPhongMaterial( { specular: 0x404040, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
@@ -60,6 +60,7 @@ function makeGeometry() {
 	//points = new THREE.Points( geometry, material );
 	points = new THREE.Mesh( geometry, material );
 	scene.add( points )
+	points.rotateX(-PI/6)
 
 	var indices = []
 	let p1 = 0, p2 = wpts, p3 = 1
