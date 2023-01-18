@@ -62,15 +62,15 @@ function makeGeometry() {
 	var indices = []
 	let p1 = 0, p2 = 1, p3 = rpts+2
 	for (let j = 0; j < thpts-1; j++) { 
-    	indices.push(p1, p2, p3)
-    	for (let i = 0; i < rpts-1; i++) {
+		indices.push(p1, p2, p3)
+		for (let i = 0; i < rpts-1; i++) {
 			let jp = j*rpts
-        	indices.push(i+j+jp+1, rpts+i+j+jp+3, rpts+i+j+jp+2)
-        	indices.push(i+j+jp+1,      i+j+jp+2, rpts+i+j+jp+3)
-	    }
-    	p2 += rpts+1; p3 += rpts+1
+			indices.push(i+j+jp+1, rpts+i+j+jp+3, rpts+i+j+jp+2)
+			indices.push(i+j+jp+1,      i+j+jp+2, rpts+i+j+jp+3)
+		}
+		p2 += rpts+1; p3 += rpts+1
 	}
-    geometry.setIndex(indices)
+	geometry.setIndex(indices)
 }
 
 function render() {
@@ -108,9 +108,9 @@ function render() {
 			let cx = Math.abs(Math.round(10*X + ix)) % colorx
 			let cy = Math.abs(Math.round(10*Y + iy)) % colory
 			colors[i]     = r_color[cx][cy]
-            colors[i + 1] = g_color[cx][cy]
-            colors[i + 2] = b_color[cx][cy]
-            i += 3;
+			colors[i + 1] = g_color[cx][cy]
+			colors[i + 2] = b_color[cx][cy]
+			i += 3;
 			radius += dvr
 		}
 		ix = (ix + 0.005)
@@ -142,7 +142,7 @@ function init() {
 	scene = new THREE.Scene();
 
 	// const bg = new THREE.TextureLoader().load('files/milky.jpg')
-    // scene.background = bg
+	// scene.background = bg
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -156,7 +156,7 @@ function init() {
 	window.addEventListener( 'resize', onWindowResize );
 
 	colormap();
-//	makeObjects();
+	//makeObjects();
 	makeGeometry();
 	scene.add( ambientLight );
 	scene.add( light );
@@ -244,29 +244,27 @@ function colormap() {
 }
 
 function setup() {
-
 	for (var q = 0; q <= pars; q++) {
 		w[q]  = Math.random() * edge * flip()
 		tv[q] = Math.random() * edge * flip() * 3
 		dv[q] = (tv[q] - w[q]) / grain
 		v[q]  = edge * Math.sin(w[q])
 	}
-
 }
 
 var soundAllowed = function (stream) {
-  window.persistAudioStream = stream;
-  audioContent = new AudioContext();
-  audioStream = audioContent.createMediaStreamSource(stream);
-  analyser = audioContent.createAnalyser();
-  audioStream.connect(analyser);
-  analyser.fftSize = 1024;
-  frequencyArray = new Uint8Array(analyser.frequencyBinCount);
+	window.persistAudioStream = stream;
+	audioContent = new AudioContext();
+	audioStream = audioContent.createMediaStreamSource(stream);
+	analyser = audioContent.createAnalyser();
+	audioStream.connect(analyser);
+	analyser.fftSize = 1024;
+	frequencyArray = new Uint8Array(analyser.frequencyBinCount);
 }
 
 var soundNotAllowed = function (error) {
-    soundOn = false
-    console.log(error);
+	soundOn = false
+	console.log(error);
 }
 
 function label() {
