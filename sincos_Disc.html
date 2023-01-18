@@ -28,7 +28,7 @@ var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
 
-var r = 16, th = 2*PI, rpts = 300, thpts = 400, dvr = r/rpts, dvth = th/(thpts-1)
+var r = 16, th = 2*PI, rpts = 300, thpts = 6, dvr = r/rpts, dvth = th/(thpts-1)
 var grain = 500, pix = 0.1, edge = 3, zoom = 1
 
 // START
@@ -87,8 +87,8 @@ function render() {
 			let X = radius * Math.cos(theta)
 			let Y = radius * Math.sin(theta)
 
-			//let Z = 0
-			let Z = v[3]*Math.sin(radius*v[0])/(radius+0.6) + Math.cos(v[1]*X/2+Y)/(v[2]+4)
+			let Z = 0
+			//let Z = v[3]*Math.sin(radius*v[0])/(radius+0.6) + Math.cos(v[1]*X/2+Y)/(v[2]+4)
 			//let Z = Math.sin(v[0]*radius)
 			//let Z = (v[0]*Math.sin(v[1]*X+Y) + v[3]*Math.cos(v[2]*Y+X))/3
 			//let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
