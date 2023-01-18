@@ -28,15 +28,15 @@ var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
 
-var r = 16, th = 2*PI, rpts = 300, thpts = 6, dvr = r/rpts, dvth = th/(thpts-1)
-var grain = 500, pix = 0.1, edge = 3, zoom = 1
+var r = 12, arc = 2*PI, rp = 600, arcp = 300, dvr = r/rp, dvc = arc/arcp
+var grain = 1000, pix = 0.1, edge = 3, zoom = 1
 
 // START
 init()
 animate()
 
 function makeGeometry() {
-	numParticles = thpts * (1 + rpts)
+	numParticles = (arcp+1) * (rp+1)
 	numP3 = numParticles * 3
 	console.log(numParticles, numP3)
 	var positions = new Array(numP3), colors = new Array(numP3); makeUVs()
@@ -50,7 +50,7 @@ function makeGeometry() {
 	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	//points = new THREE.Points( geometry, material );
 
-	const map = new THREE.TextureLoader().load('files/brix04.jpg');
+	const map = new THREE.TextureLoader().load('files/dockside.jpg');
 	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
 	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
@@ -60,15 +60,15 @@ function makeGeometry() {
 	points.rotateX(-PI/3)
 
 	var indices = []
-	let p1 = 0, p2 = 1, p3 = rpts+2
-	for (let j = 0; j < thpts-1; j++) { 
+	let p1 = 0, p2 = 1, p3 = rp+2
+	for (let j = 0; j < arcp; j++) { 
 		indices.push(p1, p2, p3)
-		for (let i = 0; i < rpts-1; i++) {
-			let jp = j*rpts
-			indices.push(i+j+jp+1, rpts+i+j+jp+3, rpts+i+j+jp+2)
-			indices.push(i+j+jp+1,      i+j+jp+2, rpts+i+j+jp+3)
+		for (let i = 0; i < rp-1; i++) {
+			let jp = j*rp
+			indices.push(i+j+jp+1, rp+i+j+jp+3, rp+i+j+jp+2)
+			indices.push(i+j+jp+1,    i+j+jp+2, rp+i+j+jp+3)
 		}
-		p2 += rpts+1; p3 += rpts+1
+		p2 += rp+1; p3 += rp+1
 	}
 	geometry.setIndex(indices)
 }
@@ -79,28 +79,28 @@ function render() {
 	
 	if (rotate) { points.rotateZ(dr) }
 	let theta = 0
-	for ( let thc = 0; thc < thpts+1; thc++) {
+	for ( let ac = 0; ac < arcp+2; ac++) {
 		let radius = 0
-		for ( let rc = 0; rc <= rpts; rc++ ) {
+		for ( let rc = 0; rc <= rp; rc++ ) {
 
 			let R = radius
 			let X = radius * Math.cos(theta)
 			let Y = radius * Math.sin(theta)
-
-			let Z = 0
+			//let Z = 0
+			let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1]**2) + Math.sin(v[4]*X/1.2+Y)/PI
 			//let Z = v[3]*Math.sin(radius*v[0])/(radius+0.6) + Math.cos(v[1]*X/2+Y)/(v[2]+4)
 			//let Z = Math.sin(v[0]*radius)
+			//let Z = Math.sin(v[0]*radius) + Math.cos(v[1]*(X+Y))
 			//let Z = (v[0]*Math.sin(v[1]*X+Y) + v[3]*Math.cos(v[2]*Y+X))/3
 			//let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
 			//let Z = Math.log(Math.abs(Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1]))) //frenetic
 			//let Z = Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])
-			//let Z = (v[3]*Math.sin(((X+w2)-(Y+h2))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X+w2))**(Y+h2))/(4+v[2]))))/2
+			//let Z = (v[3]*Math.sin(((X)-(Y))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X))**(Y))/(4+v[2]))))/2
 			//let Z = Y*Math.sin(X*v[0])+X*Math.cos(Y*v[1])
 			//let Z = (X+v[0])**2/v[2] + (Y-v[3])**2/v[1]
 			//let Z = X**2/v[2] + Y**2/v[1]
 			//let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1])
 			//let Z = Math.cos(Math.sin(v[2]*Math.cos(v[3]*Math.exp(-Math.abs(X/Y)+Math.PI)/(v[0]+4.1))))/10 + Math.sin(v[1]*X/1.2+Y)/PI
-			//let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1]) + Math.sin(v[4]*X/1.2+Y)/PI
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
@@ -115,7 +115,7 @@ function render() {
 		}
 		ix = (ix + 0.005)
 		iy = (iy + 0.002)
-		theta += dvth
+		theta += dvc
 	}
 
 	points.geometry.attributes.position.needsUpdate = true;
@@ -164,12 +164,12 @@ function init() {
 
 function makeUVs () {
 	let i=0, j=0
-	for (let k=0; k<thpts; k++) {
-		for (let l=0; l<=rpts; l++) {
+	for (let k=0; k<arcp+1; k++) {
+		for (let l=0; l<=rp; l++) {
 			uvs.push((i*Math.cos(j)+0.5), (i*Math.sin(j)+0.5));
-		 	i += 1/(2*rpts)
+		 	i += 1/(2*rp)
 		}
-		j += th/(thpts-1)
+		j += arc/(arcp)
 		i = 0
 	}
 }
