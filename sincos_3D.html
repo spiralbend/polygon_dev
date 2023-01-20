@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>sincos_3D</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-				<link type="text/css" rel="stylesheet" href="min.css">
-	</head>
-	<body bgcolor=blue>
-		<div id="esh">&nbsp;</div>
-		<div id="hud">initializing field state...</div>
-		
-
+<head>
+	<title>sincos_3D</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="min.css">
+</head>
+<body bgcolor=blue>
+	<div id="esh">&nbsp;</div>
+	<div id="hud">initializing field state...</div>
+<script type="importmap">
+	{
+		"imports": {
+			"three": "./three.js/build/three.module.js"
+		}
+	}
+</script>
 <script type="module">
-
-import * as THREE from './three.js/build/three.module.js';
+import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
 let container, camera, scene, renderer
