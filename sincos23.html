@@ -4,13 +4,20 @@
 		<title>SinCos23</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-				<link type="text/css" rel="stylesheet" href="main.css">
+				<link type="text/css" rel="stylesheet" href="min.css">
 	</head>
-	<body bgcolor=blue>
-		<div id="hud">initializing field state...<br>
-		</div>
-
+	<body bgcolor=black>
+	<div id="hud">initializing field state...<br></div>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "./three.js/build/three.module.js"
+			}
+		}
+	</script>
 <script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 document.body.style.overflow = 'hidden'
 document.onkeydown = function(e) {
 	switch (e.keyCode) { 
@@ -82,8 +89,8 @@ document.onkeydown = function(e) {
 	}
 }
 
-import * as THREE from './three.js/build/three.module.js';
-import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
+// import * as THREE from './three.js/build/three.module.js';
+// import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
 let container, camera, scene, renderer
 var points, geometry, controls, animid, windowHalfX, windowHalfY, ns, s
