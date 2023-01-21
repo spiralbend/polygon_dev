@@ -20,10 +20,10 @@ import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from './three.js/examples/jsm/loaders/RGBELoader.js';
 
-let container, camera, scene, renderer, cubeCamera
+let container, camera, scene, renderer, cubeCamera, sphere
 var points, geometry, controls, animid, windowHalfX, windowHalfY, ns, s
 
-var nobs = 1; var pix = 2; var obj = 0; var stat = 1;
+var nobs = 2; var pix = 2; var obj = 0; var stat = 1;
 var grain = 30000; var edge = 8; var dt = 0.005; var dr = 0.005
 
 const rev = Math.round(2 * Math.PI / dr)
@@ -224,9 +224,10 @@ function makeGeometry() {
 		var z = points.rotation.z
 		scene.remove( points );
 	}
-
+	sphere = new THREE.Mesh( new THREE.IcosahedronGeometry( 15, 8 ), material );
+	scene.add( sphere );
 	points = new THREE.Mesh( geometry, material );
-	scene.add( points );
+	//scene.add( points ); might need to add this back
 
 	if (frames > 0) { 
 		points.rotateX(x);
