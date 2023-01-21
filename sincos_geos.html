@@ -18,8 +18,9 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
+import { RGBELoader } from './three.js/examples/jsm/loaders/RGBELoader.js';
 
-let container, camera, scene, renderer
+let container, camera, scene, renderer, cubeCamera
 var points, geometry, controls, animid, windowHalfX, windowHalfY, ns, s
 
 var nobs = 1; var pix = 2; var obj = 0; var stat = 1;
@@ -144,7 +145,7 @@ function makeUVs () {
 }
 
 function animate() {
-
+	cubeCamera.update( renderer, scene );
 	animid = requestAnimationFrame( animate );
 	controls.update(); 
 	render();
@@ -195,16 +196,27 @@ function makeGeometry() {
 	//const geometry = new THREE.BufferGeometry();
     //const geometry = new THREE.SphereGeometry( 15, 64, 32 );
     //const geometry = new THREE.DodecahedronGeometry( 15 );
-    //const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
-    const geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
+    const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
+    //const geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
 	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
 	const map = new THREE.TextureLoader().load('files/uvgrid.jpg');
 
 	//geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-    var material = new THREE.MeshBasicMaterial( { map: map, wireframe: false, vertexColors: false } );
+    //var material = new THREE.MeshBasicMaterial( { map: map, wireframe: false, vertexColors: false } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true, vertexColors: true } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, vertexColors: true } );
+
+	var cubeRenderTarget = new THREE.WebGLCubeRenderTarget( 256 );
+	cubeRenderTarget.texture.type = THREE.HalfFloatType;
+
+	cubeCamera = new THREE.CubeCamera( 1, 1000, cubeRenderTarget );
+	var material = new THREE.MeshStandardMaterial( {
+		envMap: cubeRenderTarget.texture,
+		roughness: 0.05,
+		metalness: 1,
+		vertexColors: false
+	} );
 
 	if (frames > 0) {
 		var x = points.rotation.x
@@ -244,6 +256,7 @@ function init() {
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
 	camera.position.set( 0, 0, 100 );
 	scene = new THREE.Scene();
+	scene.rotation.y = 0.5;
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -256,11 +269,19 @@ function init() {
 	controls.screenSpacePanning = true;
 	window.addEventListener( 'resize', onWindowResize );
 
+	new RGBELoader()
+		.setPath( './three.js/examples/textures/equirectangular/' )
+		.load( 'pedestrian_overpass_1k.hdr', function ( texture ) {
+
+			texture.mapping = THREE.EquirectangularReflectionMapping;
+			scene.background = texture;
+			scene.environment = texture;
+
+		} );
 	colormap();
 	makeObjects();
 	makeGeometry();
-
-}
+ }
 
 function colormap() {
 
@@ -298,23 +319,6 @@ function setup() {
 	
 	}
 
-}
-
-var soundAllowed = function (stream) {
-
-  window.persistAudioStream = stream;
-  audioContent = new AudioContext();
-  audioStream = audioContent.createMediaStreamSource(stream);
-  analyser = audioContent.createAnalyser();
-  audioStream.connect(analyser);
-  analyser.fftSize = 1024;
-  frequencyArray = new Uint8Array(analyser.frequencyBinCount);
-
-}
-
-var soundNotAllowed = function (error) {
-    soundOn = false
-    console.log(error);
 }
 
 function label() {
