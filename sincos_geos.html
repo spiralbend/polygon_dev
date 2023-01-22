@@ -45,15 +45,15 @@ animate();
 
 function render() {
 
-	if (rotate) {
-		points.rotateX(dr);
-		if ((frames % rev) < 60) { points.rotateY(dr/2); }
-	}
+	// if (rotate) {
+	// 	points.rotateX(dr);
+	// 	if ((frames % rev) < 60) { points.rotateY(dr/2); }
+	// }
 
 	camera.lookAt( scene.position );
 
-	var positions = points.geometry.attributes.position.array;
-	var colors = points.geometry.attributes.color.array;
+	// var positions = points.geometry.attributes.position.array;
+	// var colors = points.geometry.attributes.color.array;
 
 	let i = 0;
 	let s = 0;
@@ -95,9 +95,9 @@ function render() {
 			let Z = 10//Math.floor(Math.abs(r)) % numColors
 			// var rs = r + s
 
-			colors[i]     = palet[0][Z]
-			colors[i + 1] = palet[1][Z] 
-			colors[i + 2] = palet[2][Z]
+			// colors[i]     = palet[0][Z]
+			// colors[i + 1] = palet[1][Z] 
+			// colors[i + 2] = palet[2][Z]
 			
 			i += 3;
 			dex = (dex + 3) % numP3
@@ -107,8 +107,8 @@ function render() {
 	}
 
 	//points.geometry.attributes.position.needsUpdate = true;
-	points.geometry.attributes.color.needsUpdate = true;
-    points.geometry.computeVertexNormals()
+	// points.geometry.attributes.color.needsUpdate = true;
+    // points.geometry.computeVertexNormals()
 	renderer.render( scene, camera );
 	
 	label()
@@ -196,13 +196,13 @@ function makeGeometry() {
 	//const geometry = new THREE.BufferGeometry();
     //const geometry = new THREE.SphereGeometry( 15, 64, 32 );
     //const geometry = new THREE.DodecahedronGeometry( 15 );
-    const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
+    //const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
     //const geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
 	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
 	const map = new THREE.TextureLoader().load('files/uvgrid.jpg');
 
 	//geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+	//geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
     //var material = new THREE.MeshBasicMaterial( { map: map, wireframe: false, vertexColors: false } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true, vertexColors: true } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, vertexColors: true } );
@@ -224,18 +224,23 @@ function makeGeometry() {
 		var z = points.rotation.z
 		scene.remove( points );
 	}
-	sphere = new THREE.Mesh( new THREE.IcosahedronGeometry( 15, 8 ), material );
-	scene.add( sphere );
-	points = new THREE.Mesh( geometry, material );
+	//const object = new THREE.Mesh( new THREE.IcosahedronGeometry( 15, 8 ), material );
+	//const object = new THREE.Mesh( new THREE.BoxGeometry( 20, 20, 20 ), material );
+	const object = new THREE.Mesh( new THREE.SphereGeometry( 15, 64, 32 ), material );
+	//const object = new THREE.Mesh( new THREE.DodecahedronGeometry( 15 ), material );
+	//const object = new THREE.Mesh( new THREE.TorusKnotGeometry( 10, 3, 100, 16 ), material );
+	//const object = new THREE.Mesh( new THREE.TorusGeometry( 10, 3, 16, 100 ), material );
+	scene.add( object );
+	//points = new THREE.Mesh( geometry, material );
 	//scene.add( points ); might need to add this back
 
-	if (frames > 0) { 
-		points.rotateX(x);
-		points.rotateY(y);
-		points.rotateZ(z);
-	} else {
-		points.rotateY(Math.PI/4);
-	}	
+	// if (frames > 0) { 
+	// 	points.rotateX(x);
+	// 	points.rotateY(y);
+	// 	points.rotateZ(z);
+	// } else {
+	// 	//points.rotateY(Math.PI/4);
+	// }	
 	
 	for (var i = 0; i < numP3; i += 3) {
 		noise[i]   = Math.random() * flip() / 4

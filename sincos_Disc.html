@@ -146,11 +146,11 @@ function init() {
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
-	camera.position.set( 0, 0, 50 );
+	camera.position.set( 0, 0, 30 );
 	scene = new THREE.Scene();
 
-	// const bg = new THREE.TextureLoader().load('files/milky.jpg')
-	// scene.background = bg
+	const bg = new THREE.TextureLoader().load('files/M42.jpg')
+	scene.background = bg
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
