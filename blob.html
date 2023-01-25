@@ -66,13 +66,22 @@ function makeGeometry() {
 	points.rotateX(-PI/4)
 
 	var indices = []
+	for (let k = 1; k <= rad; k++) {
+		console.log(0, k, k % rad+1)
+	}
+	for (let j = 0; j < ax-1; j++) {
+		for (let i = 1; i <= rad; i++) {
+			console.log(j*rad+i, (i + (j+1)*rad + (j%2)), i % rad+1)
+		}
+	}
+
 	let p1 = 0, p2 = 1, p3 = ax+2
 	for (let j = 0; j < rad; j++) { 
 		indices.push(p1, p2, p3)
 		for (let i = 0; i < ax-1; i++) {
-			let jp = j*ax
-			indices.push(i+j+jp+1, ax+i+j+jp+3, ax+i+j+jp+2)
-			indices.push(i+j+jp+1,    i+j+jp+2, ax+i+j+jp+3)
+			let jx = i + j + j*ax
+			indices.push(jx+1, ax+jx+3, ax+jx+2)
+			indices.push(jx+1,    jx+2, ax+jx+3)
 		}
 		p2 += ax+1; p3 += ax+1
 	}
@@ -82,8 +91,8 @@ function makeGeometry() {
 function render() {
 
 	camera.lookAt( scene.position )
-    var positions = points.geometry.attributes.position.array
-    var colors = points.geometry.attributes.color.array;
+	var positions = points.geometry.attributes.position.array
+	var colors = points.geometry.attributes.color.array;
 	let i = 0
 	
 	if (rotate) { points.rotateZ(dr) }
@@ -115,7 +124,7 @@ function render() {
 		ix = (ix + 0.005)
 		iy = (iy + 0.002)
 		theta += drad
-        
+
 	}
 
 	points.geometry.attributes.position.needsUpdate = true;

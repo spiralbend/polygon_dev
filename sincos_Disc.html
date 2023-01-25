@@ -71,9 +71,9 @@ function makeGeometry() {
 	for (let j = 0; j < arcp; j++) { 
 		indices.push(p1, p2, p3)
 		for (let i = 0; i < rp-1; i++) {
-			let jp = j*rp
-			indices.push(i+j+jp+1, rp+i+j+jp+3, rp+i+j+jp+2)
-			indices.push(i+j+jp+1,    i+j+jp+2, rp+i+j+jp+3)
+			let jp = i + j + j*rp
+			indices.push(jp+1, rp+jp+3, rp+jp+2)
+			indices.push(jp+1,    jp+2, rp+jp+3)
 		}
 		p2 += rp+1; p3 += rp+1
 	}
