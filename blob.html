@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>sincos_Disc</title>
+	<title>BLOB</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link type="text/css" rel="stylesheet" href="min.css">
@@ -20,30 +20,29 @@ import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
 let container, camera, scene, renderer, light, ambientLight
-var points, geometry, controls, animid, windowHalfX, windowHalfY, ns, s
+var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
 const PI = Math.PI
 
-var nobs = 1, obj = 0, stat = 1, dt = 0.005, dr = 0.002
-var numParticles, numP3, positions, colors, uvs, noise
-const objects = Array.from(Array(3),() => new Array(3)); var noise = [], nits = [], uvs = []
+var obj = 0, stat = 1, dt = 0.005, dr = 0.002, nits = [], uvs = []
+const objects = Array.from(Array(3),() => new Array(3))
 
-var frames = 0, pars = 8, rotate = true, ny = 0, time = 0, wait = 0
-var v = new Array(pars), w = new Array(pars), tv = new Array(pars), dv = new Array(pars)
+var frames = 0, pars = 8, rotate = false, ny = 0, time = 0, wait = 0
 var stopped = false, clean = true, discrete = true, dorando = false
-var r = 12, arc = 2*PI, rp = 600, arcp = 300, dvr = r/rp, dvc = arc/arcp
 var grain = 1000, pix = 0.1, edge = 3, zoom = 1
+var ax = 6, rad = 12, axs = 2*PI, rads = 2*PI, dax = axs/ax, drad = rads/rad
 
 var colorx = 512, colory = 1024, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
+var v = new Array(pars), w = new Array(pars), tv = new Array(pars), dv = new Array(pars)
 
 // START
 init()
 animate()
 
 function makeGeometry() {
-	numParticles = (arcp+1) * (rp+1)
+	numParticles = (rad+1) * ( ax + 1 )
 	numP3 = numParticles * 3
 	console.log(numParticles, numP3)
 	var positions = new Array(numP3), colors = new Array(numP3); makeUVs()
@@ -57,57 +56,46 @@ function makeGeometry() {
 	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	//points = new THREE.Points( geometry, material );
 
-	const map = new THREE.TextureLoader().load('files/dockside.jpg');
+	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
 	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
-	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
+	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
 
 	points = new THREE.Mesh( geometry, material );
 	scene.add( points )
-	points.rotateX(-PI/3)
+	points.rotateX(-PI/4)
 
 	var indices = []
-	let p1 = 0, p2 = 1, p3 = rp+2
-	for (let j = 0; j < arcp; j++) { 
+	let p1 = 0, p2 = 1, p3 = ax+2
+	for (let j = 0; j < rad; j++) { 
 		indices.push(p1, p2, p3)
-		for (let i = 0; i < rp-1; i++) {
-			let jp = j*rp
-			indices.push(i+j+jp+1, rp+i+j+jp+3, rp+i+j+jp+2)
-			indices.push(i+j+jp+1,    i+j+jp+2, rp+i+j+jp+3)
+		for (let i = 0; i < ax-1; i++) {
+			let jp = j*ax
+			indices.push(i+j+jp+1, ax+i+j+jp+3, ax+i+j+jp+2)
+			indices.push(i+j+jp+1,    i+j+jp+2, ax+i+j+jp+3)
 		}
-		p2 += rp+1; p3 += rp+1
+		p2 += ax+1; p3 += ax+1
 	}
 	geometry.setIndex(indices)
 }
 
 function render() {
-	camera.lookAt( scene.position );var positions = points.geometry.attributes.position.array; var colors = points.geometry.attributes.color.array;
-	let i = 0;let s = 0;let ns = 0;let dex = Math.floor(Math.random() * numP3); let cx = discrete ? 0 : Math.max(0.5 + Math.sin(time), 0) * 3;ns = ny;let tx = nits[i]
+
+	camera.lookAt( scene.position )
+    var positions = points.geometry.attributes.position.array
+    var colors = points.geometry.attributes.color.array;
+	let i = 0, cx = discrete ? 0 : Math.max(0.5 + Math.sin(time), 0) * 3
 	
 	if (rotate) { points.rotateZ(dr) }
 	let theta = 0
-	for ( let ac = 0; ac < arcp+2; ac++) {
+	for ( let ac = 0; ac < rad+2; ac++) {
 		let radius = 0
-		for ( let rc = 0; rc <= rp; rc++ ) {
+		for ( let rc = 0; rc <= ax; rc++ ) {
 
 			let R = radius
 			let X = radius * Math.cos(theta)
 			let Y = radius * Math.sin(theta)
-			//let Z = 0
-			let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1]**2) + Math.sin(v[4]*X/1.2+Y)/PI
-			//let Z = v[3]*Math.sin(radius*v[0])/(radius+0.6) + Math.cos(v[1]*X/2+Y)/(v[2]+4)
-			//let Z = Math.sin(v[0]*radius)
-			//let Z = Math.sin(v[0]*radius) + Math.cos(v[1]*(X+Y))
-			//let Z = (v[0]*Math.sin(v[1]*X+Y) + v[3]*Math.cos(v[2]*Y+X))/3
-			//let Z = v[0]/2 * Math.sin(v[1]*X/1.2+Y) //+ v[3]*Math.cos(v[2]*Y+X)
-			//let Z = Math.log(Math.abs(Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1]))) //frenetic
-			//let Z = Math.sin((X-Y)*v[0]) + Math.cos(X+Y*v[1])
-			//let Z = (v[3]*Math.sin(((X)-(Y))*v[0]) + Math.cos(Math.log(3+Math.abs(Math.abs(v[1]*(X))**(Y))/(4+v[2]))))/2
-			//let Z = Y*Math.sin(X*v[0])+X*Math.cos(Y*v[1])
-			//let Z = (X+v[0])**2/v[2] + (Y-v[3])**2/v[1]
-			//let Z = X**2/v[2] + Y**2/v[1]
-			//let Z = v[3]*v[0]*Math.sin(v[2]*R)/(R+v[1])
-			//let Z = Math.cos(Math.sin(v[2]*Math.cos(v[3]*Math.exp(-Math.abs(X/Y)+Math.PI)/(v[0]+4.1))))/10 + Math.sin(v[1]*X/1.2+Y)/PI
+			let Z = 0
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
@@ -118,11 +106,11 @@ function render() {
 			colors[i + 1] = g_color[cx][cy]
 			colors[i + 2] = b_color[cx][cy]
 			i += 3;
-			radius += dvr
+			radius += dax
 		}
 		ix = (ix + 0.005)
 		iy = (iy + 0.002)
-		theta += dvc
+		theta += drad
 	}
 
 	points.geometry.attributes.position.needsUpdate = true;
@@ -148,8 +136,8 @@ function init() {
 	camera.position.set( 0, 0, 30 );
 	scene = new THREE.Scene();
 
-	const bg = new THREE.TextureLoader().load('files/M42.jpg')
-	scene.background = bg
+	// const bg = new THREE.TextureLoader().load('files/M42.jpg')
+	// scene.background = bg
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -171,12 +159,12 @@ function init() {
 
 function makeUVs () {
 	let i=0, j=0
-	for (let k=0; k<arcp+1; k++) {
-		for (let l=0; l<=rp; l++) {
+	for (let k=0; k<rad+1; k++) {
+		for (let l=0; l<=ax; l++) {
 			uvs.push((i*Math.cos(j)+0.5), (i*Math.sin(j)+0.5));
-		 	i += 1/(2*rp)
+		 	i += 1/(2*ax)
 		}
-		j += arc/(arcp)
+		j += rad/rads
 		i = 0
 	}
 }
