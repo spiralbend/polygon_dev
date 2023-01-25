@@ -84,7 +84,7 @@ function render() {
 	camera.lookAt( scene.position )
     var positions = points.geometry.attributes.position.array
     var colors = points.geometry.attributes.color.array;
-	let i = 0, cx = discrete ? 0 : Math.max(0.5 + Math.sin(time), 0) * 3
+	let i = 0
 	
 	if (rotate) { points.rotateZ(dr) }
 	let theta = 0
@@ -96,21 +96,26 @@ function render() {
 			let X = radius * Math.cos(theta)
 			let Y = radius * Math.sin(theta)
 			let Z = 0
+			let cx = Math.abs(Math.round(10*X + ix)) % colorx
+			let cy = Math.abs(Math.round(10*Y + iy)) % colory
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
 			positions[i + 2] = zoom * Z
-			let cx = Math.abs(Math.round(10*X + ix)) % colorx
-			let cy = Math.abs(Math.round(10*Y + iy)) % colory
+
 			colors[i]     = r_color[cx][cy]
 			colors[i + 1] = g_color[cx][cy]
 			colors[i + 2] = b_color[cx][cy]
+
 			i += 3;
 			radius += dax
+
 		}
+
 		ix = (ix + 0.005)
 		iy = (iy + 0.002)
 		theta += drad
+        
 	}
 
 	points.geometry.attributes.position.needsUpdate = true;
