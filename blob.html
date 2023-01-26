@@ -28,7 +28,6 @@ const objects = Array.from(Array(3),() => new Array(3))
 
 var frames = 0, pars = 8, rotate = false, ny = 0, time = 0, wait = 0
 var stopped = false, clean = true, discrete = true, dorando = false
-var grain = 1000, pix = 0.1, edge = 3, zoom = 1
 var grain = 1000, pix = 0.1, edge = 3, zoom = 1, radius = 10
 var ax = 10, rad = 20, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad
 
@@ -58,9 +57,9 @@ function makeGeometry() {
 	//points = new THREE.Points( geometry, material );
 
 	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
+	const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
 
 	points = new THREE.Mesh( geometry, material );
 	scene.add( points )
