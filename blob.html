@@ -24,15 +24,15 @@ let container, camera, scene, renderer, light, ambientLight
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
 const PI = Math.PI
 
-var obj = 5, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
+var obj = 10, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
 var frames = 0, pars = 8, rotate = true, ny = 0, time = 0, wait = 0
 var stopped = false, clean = true, discrete = true, dorando = false
-var grain = 3000, pix = 0.1, edge = 5, zoom = 1, radi = 1
-var ax = 700, rad = 200, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads / dr)
+var grain = 3000, pix = 0.1, edge = 5, zoom = 1, radi = 1, dc = 0.15
+var ax = 450, rad = 150, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads / dr)
 
-var colorx = 512, colory = 1024, ix = 0, iy = 0
+var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
 var g_color = Array.from(Array(colorx),() => new Array(colory))
 var b_color = Array.from(Array(colorx),() => new Array(colory))
@@ -63,30 +63,27 @@ function render() {
 	for ( let j = 0; j < ax - 1; j++) {
 		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
-			//let R = radi * zoom
-			//let R = radi * zoom * (v[0] * Math.cos(v[1] * (PHI + v[6])) * Math.sin(v[2] * THETA) + v[3]
-			//* Math.cos(v[4] * (THETA + v[7])) * Math.sin(v[5] * PHI) ) + 200
-			let R  = zoom * radius(obj, PHI, THETA)
 
+			let R  = zoom * radius(obj, PHI, THETA)
 			let X = R * Math.sin(PHI) * Math.cos(THETA)
 			let Y = R * Math.sin(PHI) * Math.sin(THETA)
 			let Z = R * Math.cos(PHI)
 
-			// let cx = Math.abs(Math.round(10*X + ix)) % colorx
-			// let cy = Math.abs(Math.round(10*Y + iy)) % colory
+			let cx = Math.abs(Math.round(10*X + ix)) % colorx
+			let cy = Math.abs(Math.round(10*Y + iy)) % colory
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
 			positions[i + 2] = zoom * Z
-			// colors[i]     = r_color[cx][cy]
-			// colors[i + 1] = g_color[cx][cy]
-			// colors[i + 2] = b_color[cx][cy]
+			colors[i]     = r_color[cx][cy]
+			colors[i + 1] = g_color[cx][cy]
+			colors[i + 2] = b_color[cx][cy]
 
 			i += 3;
 			THETA += drad
 		}
-		ix = (ix + 0.005)
-		iy = (iy + 0.002)
+		ix = (ix + 0.05)
+		iy = (iy + 0.02)
 		PHI += dax		
 
 	} // now make 0,0,-R
@@ -121,10 +118,10 @@ function makeGeometry() {
 	// points = new THREE.Points( geometry, material );
 
 	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, color: 0xFF00FF, vertexColors: false, side: THREE.DoubleSide, flatShading: false } ); //flatShading: true for facet effect
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, color: 0xFF00FF, vertexColors: false, side: THREE.DoubleSide, flatShading: false } );
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: false, color: 0xFFFFFF } );
+	const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
 	//points = new THREE.Points( geometry, material );
 	points = new THREE.Mesh( geometry, material );
@@ -228,45 +225,36 @@ function randomize() {
 }
 
 function colormap() {
-	for (let i=0; i<256; i++) {
-		for (let j=0; j<256; j++) {
-			r_color[i][j] = (255-j)/255
-			g_color[i][j] = (255-i)/255
-			b_color[i][j] = 0
-			r_color[511-i][j] = (255-j)/255
-			g_color[511-i][j] = (255-i)/255
-			b_color[511-i][j] = 0
+	let k=0, m=0, cx1 = colorx - 1, cy4 = Math.round(colory/4)
+	for (let i=0; i<256; i += dc) {
+		for (let j=0; j<256; j += dc) {
+			r_color[k][m] = (255-j)/255
+			g_color[k][m] = (255-i)/255
+			b_color[k][m] = 0
+			r_color[cx1-k][m] = (255-j)/255
+			g_color[cx1-k][m] = (255-i)/255
+			b_color[cx1-k][m] = 0
+			r_color[k][m+3*cy4] = 1
+			g_color[k][m+3*cy4] = (255-i)/255
+			b_color[k][m+3*cy4] = (255-j)/255
+			r_color[cx1-k][m+3*cy4] = 1
+			g_color[cx1-k][m+3*cy4] = (255-i)/255
+			b_color[cx1-k][m+3*cy4] = (255-j)/255
+			r_color[k][m+2*cy4] = j/255
+			g_color[k][m+2*cy4] = (255-i)/255
+			b_color[k][m+2*cy4] = 1
+			r_color[cx1-k][m+2*cy4] = j/255
+			g_color[cx1-k][m+2*cy4] = (255-i)/255
+			b_color[cx1-k][m+2*cy4] = 1
+			r_color[k][m+cy4] = 0
+			g_color[k][m+cy4] = (255-i)/255
+			b_color[k][m+cy4] = j/255
+			r_color[cx1-k][m+cy4] = 0
+			g_color[cx1-k][m+cy4] = (255-i)/255
+			b_color[cx1-k][m+cy4] = j/255
+			m++
 		}
-	}
-	for (let i=0; i<256; i++) {
-		for (let j=0; j<256; j++) {
-			r_color[i][j+768] = 1
-			g_color[i][j+768] = (255-i)/255
-			b_color[i][j+768] = (255-j)/255
-			r_color[511-i][j+768] = 1
-			g_color[511-i][j+768] = (255-i)/255
-			b_color[511-i][j+768] = (255-j)/255
-		}
-	}
-	for (let i=0; i<256; i++) {
-		for (let j=0; j<256; j++) {
-			r_color[i][j+512] = j/255
-			g_color[i][j+512] = (255-i)/255
-			b_color[i][j+512] = 1
-			r_color[511-i][j+512] = j/255
-			g_color[511-i][j+512] = (255-i)/255
-			b_color[511-i][j+512] = 1
-		}
-	}		
-	for (let i=0; i<256; i++) {
-		for (let j=0; j<256; j++) {
-			r_color[i][j+256] = 0
-			g_color[i][j+256] = (255-i)/255
-			b_color[i][j+256] = j/255
-			r_color[511-i][j+256] = 0
-			g_color[511-i][j+256] = (255-i)/255
-			b_color[511-i][j+256] = j/255
-		}
+		k++; m = 0
 	}
 }
 
@@ -293,7 +281,7 @@ function radius(obj,th,ph) {
 		case 7:  R = mag * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)); break
 		case 8:  R = mag * (Math.sin(v[1]*th) * Math.sin(v[3]*ph)) ** ((Math.cos(v[5]*th) * Math.cos(v[4]*ph))); break
 		case 9:  R = mag * (v[0] * Math.sin(v[1]*(th+v[7])) + v[3] * Math.cos(v[8]+ph)**v[5] + ph * Math.tan(v[6]*th)); break
-		case 10: R = mag * Math.abs(Math.sin( Math.cos(v[6] * th) + Math.sin(v[9] * th * ph) + v[3] * Math.cos(th + ph) )); break
+		case 10: R = mag * 20; break
 		case 11: R = mag * Math.exp( (Math.sin(Math.abs(v[0])*th))**Math.abs(v[1]) * (Math.cos(v[2]**2*ph)**v[3]) ); break
 		case 12: R = mag * Math.log(ph) * Math.tan(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.log(v[8]**2 * (th + ph)) )); break
 		case 13: R = mag * Math.exp( v[0] * Math.sin(v[1]*th) * v[2] * Math.cos(v[3]*ph) / (v[4]*th) ); break
@@ -315,12 +303,6 @@ function radius(obj,th,ph) {
 		case 32: R = mag * (Math.cos(Math.cos(th + v[3]**2)) + v[4]*Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th))); break
 		default: R = 100; break
 
-	//		case 1:  R = mag * Math.abs( v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 100; break
-	//		case 10: R = mag * Math.tan(Math.sin(v[1]*th)) ** Math.tan(Math.cos(v[4]*ph)**v[5]); break
-	//		case 12: R = mag * (v[0] * Math.sin(v[1]*(th+ph))**v[2] + v[3] * Math.cos(v[4]*ph*th)**v[5]); break
-	//		case 21: R = mag * Math.abs(v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph)**v[8] + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th)**v[9]) + 120; break
-	//		case 29: R = mag * Math.abs(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.cos(v[8] * (th + ph)) )); break
-
 	}
 
 return R
@@ -338,7 +320,7 @@ function makeObjects() {
 	objects[7]  = ["antimatter jellyfish", 180, "b"]
 	objects[8]  = ["plasma ball", 200, "n"]
 	objects[9]  = ["wormhole topology", 30, "x"]
-	objects[10] = ["gas giant", 260, "z"]
+	objects[10] = ["gas giant", 10, "z"]
 	objects[11] = ["event horizon", 180, "q"]
 	objects[12] = ["cosmic orchid", 140, "c"]
 	objects[13] = ["string theory", 280, "y"]
