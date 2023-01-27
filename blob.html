@@ -24,12 +24,12 @@ let container, camera, scene, renderer, light, ambientLight
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
 const PI = Math.PI
 
-var obj = 0, stat = 1, dt = 0.005, dr = 0.002, nits = [], uvs = []
+var obj = 5, stat = 1, dt = 0.005, dr = 0.002, nits = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
 var frames = 0, pars = 8, rotate = true, ny = 0, time = 0, wait = 0
 var stopped = false, clean = true, discrete = true, dorando = false
-var grain = 8000, pix = 0.1, edge = 6, zoom = 8, radius = 1
+var grain = 8000, pix = 0.1, edge = 6, zoom = 1, radi = 1
 var ax = 100, rad = 200, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads / dr)
 
 var colorx = 512, colory = 1024, ix = 0, iy = 0
@@ -59,27 +59,28 @@ function render() {
 	// make 0,0,R
 	positions[0] = 0
 	positions[1] = 0
-	positions[2] = radius * zoom
+	positions[2] = radi * zoom
 	for ( let j = 0; j < ax - 1; j++) {
 		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
-			//let R = radius * zoom
-			let R = radius * zoom * (v[0] * Math.cos(v[1] * (THETA + v[6])) * Math.sin(v[2] * PHI) + v[3]
-			* Math.cos(v[4] * (PHI + v[7])) * Math.sin(v[5] * THETA) ) + 200
+			//let R = radi * zoom
+			//let R = radi * zoom * (v[0] * Math.cos(v[1] * (PHI + v[6])) * Math.sin(v[2] * THETA) + v[3]
+			//* Math.cos(v[4] * (THETA + v[7])) * Math.sin(v[5] * PHI) ) + 200
+			let R  = zoom * radius(obj, PHI, THETA)
 
 			let X = R * Math.sin(PHI) * Math.cos(THETA)
 			let Y = R * Math.sin(PHI) * Math.sin(THETA)
 			let Z = R * Math.cos(PHI)
 
-			let cx = Math.abs(Math.round(10*X + ix)) % colorx
-			let cy = Math.abs(Math.round(10*Y + iy)) % colory
+			// let cx = Math.abs(Math.round(10*X + ix)) % colorx
+			// let cy = Math.abs(Math.round(10*Y + iy)) % colory
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
 			positions[i + 2] = zoom * Z
-			colors[i]     = r_color[cx][cy]
-			colors[i + 1] = g_color[cx][cy]
-			colors[i + 2] = b_color[cx][cy]
+			// colors[i]     = r_color[cx][cy]
+			// colors[i + 1] = g_color[cx][cy]
+			// colors[i + 2] = b_color[cx][cy]
 
 			i += 3;
 			THETA += drad
@@ -91,7 +92,7 @@ function render() {
 	} // now make 0,0,-R
 	positions[i]   = 0
 	positions[i+1] = 0
-	positions[i+2] = -radius * zoom
+	positions[i+2] = -radi * zoom
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -182,7 +183,7 @@ function init() {
 	window.addEventListener( 'resize', onWindowResize );
 
 	colormap();
-	//makeObjects();
+	makeObjects();
 	makeGeometry();
 	scene.add( ambientLight );
 	scene.add( light );
@@ -277,6 +278,95 @@ function setup() {
 		v[q]  = edge * Math.sin(w[q])
 	}
 }
+function radius(obj,th,ph) {
+
+	let R, mag = objects[obj][1]
+	switch (obj) {
+
+		case 0:  R = 300; break
+		case 1:  R = mag * (12 + Math.sin(v[0]*Math.cos(v[1] * (v[8]*th/ph+v[2]*v[6]))) - Math.cos(-1*v[3]*Math.sin(v[4] * (v[9]*ph-th+v[5]*v[7])))); break
+		case 2:  R = mag * Math.sin(Math.log(v[1]**2*th)) + v[3] * Math.cos(v[2]**2*ph**v[4]) + v[6] * Math.sin(Math.exp(v[5]*th)); break
+		case 3:  R = mag * Math.abs(Math.cos(v[7]*th)+2) + objects[obj][1] * Math.abs(v[0] * Math.sin(v[1]*th) + v[3] * Math.cos(v[4]*ph) + v[5]*Math.sin(th*ph+v[6])); break
+		case 4:  R = mag * (v[0] * Math.sin(v[1]*th) + v[3] * Math.cos(v[4]*ph)); break
+		case 5:  R = mag * (v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 200; break
+		case 6:  R = mag * Math.log( ph * Math.sin(v[1]*th)**v[2] + v[3] * th * Math.cos(v[4]*ph) ); break
+		case 7:  R = mag * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)); break
+		case 8:  R = mag * (Math.sin(v[1]*th) * Math.sin(v[3]*ph)) ** ((Math.cos(v[5]*th) * Math.cos(v[4]*ph))); break
+		case 9:  R = mag * (v[0] * Math.sin(v[1]*(th+v[7])) + v[3] * Math.cos(v[8]+ph)**v[5] + ph * Math.tan(v[6]*th)); break
+		case 10: R = mag * Math.abs(Math.sin( Math.cos(v[6] * th) + Math.sin(v[9] * th * ph) + v[3] * Math.cos(th + ph) )); break
+		case 11: R = mag * Math.exp( (Math.sin(Math.abs(v[0])*th))**Math.abs(v[1]) * (Math.cos(v[2]**2*ph)**v[3]) ); break
+		case 12: R = mag * Math.log(ph) * Math.tan(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.log(v[8]**2 * (th + ph)) )); break
+		case 13: R = mag * Math.exp( v[0] * Math.sin(v[1]*th) * v[2] * Math.cos(v[3]*ph) / (v[4]*th) ); break
+		case 14: R = mag * Math.exp( v[2] * Math.tan(v[3]*th) / (ph+v[0]) ); break
+		case 15: R = mag * Math.exp (( Math.sin(v[1]*th)**v[2] / (ph*v[0]) ) * ( Math.sin(v[4]*ph)**v[5] / (th*v[3]) )); break
+		case 16: R = mag * Math.log(Math.abs( v[0]*Math.sin(v[1]*th) ** Math.cos(v[2]*ph) )); break
+		case 17: R = mag * v[0] * Math.cos(v[1] * (th + ph))  + v[2]*Math.cos(v[3] * ph * th) + v[4]*Math.sin(v[5] * (th / ph)) + 100; break
+		case 18: R = mag * v[6] * Math.exp( Math.sin((th*v[0]) * (ph**2) * Math.exp ( (th+ph)**2 * Math.sin((ph*v[3])**2) )) ); break
+		case 19: R = mag * v[0] * Math.exp((Math.sin(v[1]*th) * Math.cos(ph)**v[5]))**Math.tan(v[5]*th); break
+		case 20: R = mag * Math.exp((Math.sin(v[1]*(th+ph)) * Math.cos(th+ph)**v[5]))**Math.sqrt(Math.abs(Math.tan(v[5]*ph*th)));; break
+		case 21: R = mag * Math.sqrt(5 + Math.abs(v[0]*Math.cos(v[7]*ph) + v[1]*Math.cos(v[6]*th) + v[2]*Math.cos(v[5]*ph+th) + v[3]*Math.cos(v[4]*th+ph) +
+					v[4]*Math.cos(v[3]*(ph+th)) + v[5]*Math.cos(v[2]*th*ph) + v[6]*Math.cos(v[1]*ph)/(ph+3) + v[7]*Math.cos(v[0]*th)/(th+3))); break
+		case 22: R = mag * ph * Math.sin(v[1]*th) ** (th * Math.cos(v[4]*ph)); break
+		case 23: R = mag * Math.cos(v[3]**2 * Math.log(10 + v[0] * Math.sin(v[1] * ph +  v[2] * th))); break
+		case 24: R = mag * Math.cos(th + v[3]**2) * Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th)) + 100; break
+		case 25: R = mag * Math.cos(Math.cos(th + v[3]**2)) + v[4]*Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th)); break
+		case 26: R = mag * Math.log( 10 + v[2]*Math.sin( v[1]*ph*Math.sin( v[0]*th ))); break
+		case 27: R = mag * ( v[0] * Math.cos(v[1]*(th+ph))**3 + v[2] * Math.cos(v[3]*(th*ph))**2 + v[4] * Math.cos(v[5]*(Math.sqrt(ph*th))) + v[6] ); break
+		case 32: R = mag * (Math.cos(Math.cos(th + v[3]**2)) + v[4]*Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th))); break
+		default: R = 100; break
+
+	//		case 1:  R = mag * Math.abs( v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph) + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th) ) + 100; break
+	//		case 10: R = mag * Math.tan(Math.sin(v[1]*th)) ** Math.tan(Math.cos(v[4]*ph)**v[5]); break
+	//		case 12: R = mag * (v[0] * Math.sin(v[1]*(th+ph))**v[2] + v[3] * Math.cos(v[4]*ph*th)**v[5]); break
+	//		case 21: R = mag * Math.abs(v[0] * Math.cos(v[1] * (th + v[6])) * Math.sin(v[2] * ph)**v[8] + v[3] * Math.cos(v[4] * (ph + v[7])) * Math.sin(v[5] * th)**v[9]) + 120; break
+	//		case 29: R = mag * Math.abs(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.cos(v[8] * (th + ph)) )); break
+
+	}
+
+return R
+
+}
+
+function makeObjects() {
+	objects[0]  = ["calibration vector", 10, "`"]
+	objects[1] = ["helioquake", 24, "_9"]
+	objects[2]  = ["mass ejection", 350, "_1"]
+	objects[3]  = ["probability field", 16, "r"]
+	objects[4]  = ["harmonic resonance", 35, "u"]
+	objects[5]  = ["quantum baseline", 8, "_2"]
+	objects[6]  = ["spike proteins", 150, "v"]
+	objects[7]  = ["antimatter jellyfish", 180, "b"]
+	objects[8]  = ["plasma ball", 200, "n"]
+	objects[9]  = ["wormhole topology", 30, "x"]
+	objects[10] = ["gas giant", 260, "z"]
+	objects[11] = ["event horizon", 180, "q"]
+	objects[12] = ["cosmic orchid", 140, "c"]
+	objects[13] = ["string theory", 280, "y"]
+	objects[14] = ["metric tensor", 350, "_4"]
+	objects[15] = ["double helix", 250, "p"]
+	objects[16] = ["grand design", 180, "_3"]
+	objects[17] = ["analytic continuation", 55, "_5"]
+	objects[18] = ["galactic embryo", 50, "i"]
+	objects[19] = ["hypersurface gradient", 40, "o"]
+	objects[20] = ["braincast", 200, "t"]
+	objects[21] = ["monkfish icecream", 60, "_0"]
+	objects[22] = ["logic bomb", 100, "w"]
+	objects[23] = ["core collapse", 320, "e"]
+	objects[24] = ["lotus blossom", 120, "_6"]
+	objects[25] = ["self mover", 300, "_8"]
+	objects[26] = ["spirogyra", 120, "_7"]
+	objects[27] = ["magneto storm", 20, "m"]
+
+//	objects[1]  = ["spacetime manifold", 30, "."]
+//	objects[10] = ["tidal disruption", 320, "h"]
+//	objects[12] = ["unstable nucleus", 30, ","]
+//	objects[21] = ["range anomaly", 10, "j"]
+//	objects[32] = ["new", 10, "/"]
+//	objects[33] = ["new", 10, ";"]
+//	objects[34] = ["new", 10, "["]
+//	objects[35] = ["new", 10, "]"]
+
+}
 
 function label() {
 	var bp = "<font color=#00FF00 face=Courier size=5>"
@@ -323,33 +413,34 @@ document.onkeydown = function(e) {
 		case 117: e.preventDefault(); THETA = THETA < 4 ? 2 * THETA : Math.PI; scene.remove( points ); makeGeometry(); break //f6
 		case 118: e.preventDefault(); dt /= 1.01; makeGeometry(); break //f7
 		case 119: e.preventDefault(); dt *= 1.01; makeGeometry(); break //f8
-		case 67: obj = 0;  break //c
-		case 49: obj = 1;  break //1
-		case 50: obj = 2;  break //2
-		case 51: obj = 3;  break //3
-		case 52: obj = 4;  break //4
-		case 53: obj = 5;  break //5
-		case 54: obj = 6;  break //6
-		case 55: obj = 7;  break //7
-		case 56: obj = 8;  break //8
-		case 57: obj = 9;  break //9
-		case 48: obj = 10; break //0
+		case 192: obj = 0; break //`
+		case 49: obj = 2;  break //1
+		case 50: obj = 5;  break //2
+		case 51: obj = 16;  break //3
+		case 52: obj = 14;  break //4
+		case 53: obj = 17;  break //5
+		case 54: obj = 24;  break //6
+		case 55: obj = 26;  break //7
+		case 56: obj = 25;  break //8
+		case 57: obj = 1;  break //9
+		case 48: obj = 21; break //0
 		case 81: obj = 11; break //q
-		case 87: obj = 12; break //w
-		case 69: obj = 13; break //e
-		case 82: obj = 14; break //r
-		case 84: obj = 15; break //t
-		case 89: obj = 16; break //y
-		case 85: obj = 17; break //u
+		case 87: obj = 22; break //w
+		case 69: obj = 23; break //e
+		case 82: obj = 3; break //r
+		case 84: obj = 20; break //t
+		case 89: obj = 13; break //y
+		case 85: obj = 4; break //u
 		case 73: obj = 18; break //i
 		case 79: obj = 19; break //o
-		case 80: obj = 20; break //p
-		case 90: obj = 21; break //z
-		case 88: obj = 22; break //x
-		case 86: obj = 23; break //v
-		case 66: obj = 24; break //b
-		case 78: obj = 25; break //n
-		case 77: obj = 26; break //m
+		case 80: obj = 15; break //p
+		case 90: obj = 10; break //z
+		case 88: obj = 9; break //x
+		case 67: obj = 12;  break //c
+		case 86: obj = 6;  break //v
+		case 66: obj = 7;  break //b
+		case 78: obj = 8;  break //n
+		case 77: obj = 27;  break //m
 		case 68: colormap(); break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
 		case 65: rotate = !rotate; break //a rotate on/off
