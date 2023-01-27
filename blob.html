@@ -59,7 +59,8 @@ function render() {
 	// make 0,0,R
 	positions[0] = 0
 	positions[1] = 0
-	positions[2] = radi * zoom
+	positions[2] = zoom * radius(obj, 0, 0)
+	//positions[2] = radi * zoom
 	for ( let j = 0; j < ax - 1; j++) {
 		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
@@ -69,8 +70,8 @@ function render() {
 			let Y = R * Math.sin(PHI) * Math.sin(THETA)
 			let Z = R * Math.cos(PHI)
 
-			let cx = Math.abs(Math.round(10*X + ix)) % colorx
-			let cy = Math.abs(Math.round(10*Y + iy)) % colory
+			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
+			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
@@ -89,7 +90,8 @@ function render() {
 	} // now make 0,0,-R
 	positions[i]   = 0
 	positions[i+1] = 0
-	positions[i+2] = -radi * zoom
+	positions[i+2] = zoom * radius(obj, axs, rads)
+	//positions[i+2] = -radi * zoom
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -118,10 +120,10 @@ function makeGeometry() {
 	// points = new THREE.Points( geometry, material );
 
 	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, color: 0xFF00FF, vertexColors: false, side: THREE.DoubleSide, flatShading: false } );
+	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: false } );
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
-	const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
+	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
 	//points = new THREE.Points( geometry, material );
 	points = new THREE.Mesh( geometry, material );
@@ -304,7 +306,7 @@ function radius(obj,th,ph) {
 		default: R = 100; break
 
 	}
-
+if ( isNaN(R) ) { return 1 }
 return R
 
 }
