@@ -28,8 +28,8 @@ const objects = Array.from(Array(3),() => new Array(3))
 
 var frames = 0, pars = 8, rotate = false, ny = 0, time = 0, wait = 0
 var stopped = false, clean = true, discrete = true, dorando = false
-var grain = 1000, pix = 0.1, edge = 3, zoom = 1, radius = 10
-var ax = 31, rad = 99, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad
+var grain = 1000, pix = 0.1, edge = 3, zoom = 8, radius = 1
+var ax = 100, rad = 200, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad
 
 var colorx = 512, colory = 1024, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -40,6 +40,64 @@ var v = new Array(pars), w = new Array(pars), tv = new Array(pars), dv = new Arr
 // START
 init()
 animate()
+
+function render() {
+
+	camera.lookAt( scene.position )
+	var positions = points.geometry.attributes.position.array
+	var colors = points.geometry.attributes.color.array;
+	let i = 3
+	
+	if (rotate) { points.rotateZ(dr) }
+	let PHI = dax
+
+	// make 0,0,R
+	positions[0] = 0
+	positions[1] = 0
+	positions[2] = radius * zoom
+	for ( let j = 0; j < ax - 1; j++) {
+		let THETA = 0 + (drad/2) * (j%2)
+		for ( let k = 0; k < rad; k++ ) {
+			//let R = radius * zoom
+			let R = radius * zoom * (v[0] * Math.cos(v[1] * (THETA + v[6])) * Math.sin(v[2] * PHI) + v[3]
+			* Math.cos(v[4] * (PHI + v[7])) * Math.sin(v[5] * THETA) ) + 200
+
+			let X = R * Math.sin(PHI) * Math.cos(THETA)
+			let Y = R * Math.sin(PHI) * Math.sin(THETA)
+			let Z = R * Math.cos(PHI)
+
+			let cx = Math.abs(Math.round(10*X + ix)) % colorx
+			let cy = Math.abs(Math.round(10*Y + iy)) % colory
+
+			positions[i]     = zoom * X
+			positions[i + 1] = zoom * Y
+			positions[i + 2] = zoom * Z
+			colors[i]     = r_color[cx][cy]
+			colors[i + 1] = g_color[cx][cy]
+			colors[i + 2] = b_color[cx][cy]
+
+			i += 3;
+			THETA += drad
+		}
+		ix = (ix + 0.005)
+		iy = (iy + 0.002)
+		PHI += dax		
+
+	} // now make 0,0,-R
+	positions[i]   = 0
+	positions[i+1] = 0
+	positions[i+2] = -radius * zoom
+
+	points.geometry.attributes.position.needsUpdate = true;
+	points.geometry.attributes.color.needsUpdate = true;
+	points.geometry.computeVertexNormals()
+
+	renderer.render( scene, camera );
+	label()
+	frames++; wait--
+	time += 0.012 * stat
+
+}
 
 function makeGeometry() {
 	numParticles = rad * (ax-1) + 2
@@ -57,9 +115,9 @@ function makeGeometry() {
 	// points = new THREE.Points( geometry, material );
 
 	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: true } ); //flatShading: true for facet effect
+	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: true } ); //flatShading: true for facet effect
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
-	const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
+	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: false, color: 0xFFFFFF } );
 
 	//points = new THREE.Points( geometry, material );
@@ -91,65 +149,6 @@ function makeGeometry() {
 	geometry.setIndex(indices)
 }
 
-function render() {
-
-	camera.lookAt( scene.position )
-	var positions = points.geometry.attributes.position.array
-	var colors = points.geometry.attributes.color.array;
-	let i = 3
-	
-	if (rotate) { points.rotateZ(dr) }
-	let PHI = dax
-
-	// make 0,0,1
-	positions[0] = 0
-	positions[1] = 0
-	positions[2] = radius * zoom
-	for ( let j = 0; j < ax - 1; j++) {
-		let THETA = 0 + (drad/2) * (j%2)
-		for ( let k = 0; k < rad; k++ ) {
-			let R = radius * zoom
-			let X = R * Math.sin(PHI) * Math.cos(THETA)
-			let Y = R * Math.sin(PHI) * Math.sin(THETA)
-			let Z = R * Math.cos(PHI)
-
-			let cx = Math.abs(Math.round(10*X + ix)) % colorx
-			let cy = Math.abs(Math.round(10*Y + iy)) % colory
-
-			positions[i]     = zoom * X
-			positions[i + 1] = zoom * Y
-			positions[i + 2] = zoom * Z
-
-			colors[i]     = r_color[cx][cy]
-			colors[i + 1] = g_color[cx][cy]
-			colors[i + 2] = b_color[cx][cy]
-
-			i += 3;
-			THETA += drad
-
-		}
-
-		ix = (ix + 0.005)
-		iy = (iy + 0.002)
-		PHI += dax		
-
-	}
-	// make 0,0,-1
-	positions[i]   = 0
-	positions[i+1] = 0
-	positions[i+2] = -radius * zoom
-
-	points.geometry.attributes.position.needsUpdate = true;
-	points.geometry.attributes.color.needsUpdate = true;
-	points.geometry.computeVertexNormals()
-
-	renderer.render( scene, camera );
-	label()
-	frames++; wait--
-	time += 0.012 * stat
-
-}
-
 function init() {
 	setup();
 	ambientLight = new THREE.AmbientLight( 0x404040 );
@@ -159,7 +158,7 @@ function init() {
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
-	camera.position.set( 0, 0, 30 );
+	camera.position.set( 0, 0, 1000 );
 	scene = new THREE.Scene();
 
 	// const bg = new THREE.TextureLoader().load('files/M42.jpg')
