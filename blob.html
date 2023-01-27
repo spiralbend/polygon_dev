@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link type="text/css" rel="stylesheet" href="min.css">
 </head>
-<body bgcolor=black>
+	<body bgcolor=black>
 	<div id="hud">initializing field state...<br></div>
 <script type="importmap">
 	{
@@ -29,7 +29,7 @@ const objects = Array.from(Array(3),() => new Array(3))
 var frames = 0, pars = 8, rotate = false, ny = 0, time = 0, wait = 0
 var stopped = false, clean = true, discrete = true, dorando = false
 var grain = 1000, pix = 0.1, edge = 3, zoom = 1, radius = 10
-var ax = 10, rad = 20, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad
+var ax = 31, rad = 99, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad
 
 var colorx = 512, colory = 1024, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -52,15 +52,17 @@ function makeGeometry() {
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
 
 	//Point Cloud 
-	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	//points = new THREE.Points( geometry, material );
+	// const sprite = new THREE.TextureLoader().load( './files/circle.png' );
+	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
+	// points = new THREE.Points( geometry, material );
 
 	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide } ); //flatShading: true for facet effect
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: true } ); //flatShading: true for facet effect
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
+	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: false, color: 0xFFFFFF } );
 
+	//points = new THREE.Points( geometry, material );
 	points = new THREE.Mesh( geometry, material );
 	scene.add( points )
 	//points.rotateX(-PI/4)
@@ -68,35 +70,24 @@ function makeGeometry() {
 	var indices = []
 	for (let k = 1; k <= rad; k++) {
 		indices.push(0, k, k%rad + 1)
-		console.log(0, k, k%rad + 1)
 	}
 	for (let j = 0; j < ax-2; j++) {
 		for (let i = 1; i <= rad; i++) {
-			let jr = rad*(j + 1)
 			let ir = i%rad + 1
-			if (j%2 == 0) {
-				indices.push(j*rad + i, (j%2) + i + jr, ir + j*rad)
-				console.log(j*rad + i, (j%2) + i + jr, ir + j*rad)
-			} else {
+			let jr = rad*(j + 1)
+			let hk = (i == rad) ? 1 : 0
+			if (j%2 == 0) { // B,D,F &c. j=0,2,4...
+				indices.push(j*rad + i, j%2 + i + jr, ir + j*rad)
+				indices.push(j*rad + (i + 1)%(rad + 1) + hk, j%2 + i + jr, jr + ir)
+			} else { // C,E,G &c. j=1,3,5...
 				indices.push(j*rad + i, jr + ir, jr + ir - rad)
-				console.log(j*rad + i, jr + ir, jr + ir - rad)
+				indices.push(rad*(j+1) + i, jr + ir, rad*(j + 1) + i - rad)
 			}
 		}
 	}
 	for (let k = 1; k <= rad; k++) {
-		indices.push(rad*(ax -2 ) + k, 1 + rad*(ax - 1), 1 + rad*(ax - 2) + k%rad)
-		console.log(rad*(ax -2 ) + k, 1 + rad*(ax - 1), 1 + rad*(ax - 2) + k%rad)
+		indices.push(rad*(ax - 2 ) + k, 1 + rad*(ax - 1), 1 + rad*(ax - 2) + k%rad)
 	}
-	// let p1 = 0, p2 = 1, p3 = ax+2
-	// for (let j = 0; j < rad; j++) { 
-	// 	indices.push(p1, p2, p3)
-	// 	for (let i = 0; i < ax-1; i++) {
-	// 		let jx = i + j + j*ax
-	// 		indices.push(jx+1, ax+jx+3, ax+jx+2)
-	// 		indices.push(jx+1,    jx+2, ax+jx+3)
-	// 	}
-	// 	p2 += ax+1; p3 += ax+1
-	// }
 	geometry.setIndex(indices)
 }
 
@@ -109,14 +100,14 @@ function render() {
 	
 	if (rotate) { points.rotateZ(dr) }
 	let PHI = dax
+
 	// make 0,0,1
 	positions[0] = 0
 	positions[1] = 0
 	positions[2] = radius * zoom
 	for ( let j = 0; j < ax - 1; j++) {
-		let THETA = 0 + (drad/2) * j%2
+		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
-			if (frames == 5) { console.log(PHI) }
 			let R = radius * zoom
 			let X = R * Math.sin(PHI) * Math.cos(THETA)
 			let Y = R * Math.sin(PHI) * Math.sin(THETA)
@@ -156,7 +147,6 @@ function render() {
 	label()
 	frames++; wait--
 	time += 0.012 * stat
-	if (frames == 5) { console.log(positions) }
 
 }
 
