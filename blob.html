@@ -22,7 +22,7 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
-var obj = 0, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
+var obj = 0, stat = 1, dt = 0.005, dr = 0.005, noise = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
 var rotate = true, stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8
@@ -44,11 +44,12 @@ function render() {
 	camera.lookAt( scene.position )
 	var positions = points.geometry.attributes.position.array
 	var colors = points.geometry.attributes.color.array;
+	let dex = Math.floor(Math.random() * numP3)
 	let i = 3
 	
 	if (rotate) { 
-		points.rotateZ(dr)
-		if ((frames % rev) < 400) { points.rotateX(dr/2); points.rotateY(dr/3) }
+		points.rotateX(dr)
+		if ((frames % rev) < 400) { points.rotateY(dr/2); points.rotateZ(dr/3) }
 	}
 
 	let PHI = dax
@@ -62,9 +63,9 @@ function render() {
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
-			let X = R * Math.sin(PHI) * Math.cos(THETA)
-			let Y = R * Math.sin(PHI) * Math.sin(THETA)
-			let Z = R * Math.cos(PHI)
+			let X = R * Math.sin(PHI) * Math.cos(THETA) + noise[dex]           * ny * 2
+			let Y = R * Math.sin(PHI) * Math.sin(THETA) + noise[(dex+1)%numP3] * ny * 2
+			let Z = R * Math.cos(PHI)                   + noise[(dex+2)%numP3] * ny * 2
 
 			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
 			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
@@ -80,6 +81,7 @@ function render() {
 
 			i += 3;
 			THETA += drad
+			dex = (dex + 3) % numP3
 		}
 		ix = (ix + 0.05)
 		iy = (iy + 0.02)
@@ -118,6 +120,7 @@ function makeGeometry() {
 
 	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
 	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
@@ -150,6 +153,12 @@ function makeGeometry() {
 		indices.push(rad*(ax - 2 ) + k, 1 + rad*(ax - 1), 1 + rad*(ax - 2) + k%rad)
 	}
 	geometry.setIndex(indices)
+
+	for (var i = 0; i < numP3; i += 3) {
+		noise[i]   = Math.random() * flip() / 4
+		noise[i+1] = Math.random() * flip() / 4
+		noise[i+2] = Math.random() * flip() / 4
+	}
 }
 
 function init() {
