@@ -25,9 +25,9 @@ var points, geometry, controls, animid, numParticles, numP3, positions, colors, 
 var obj = 10, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
-var stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8, rotate = true
-var grain = 2500, pix = 1, edge = 5, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
-var ax = 250, rad = 250, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var rotate = true, stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8
+var grain = 5000, pix = 1, edge = 5, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
+var ax = 100, rad = 100, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -58,7 +58,7 @@ function render() {
 	positions[1] = 0
 	positions[2] = zoom * radius(obj, 0, 0)
 	for ( let j = 0; j < ax - 1; j++) {
-		let THETA = 0 //+ (drad/2) * (j%2)
+		let THETA = 0
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
@@ -68,6 +68,8 @@ function render() {
 
 			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
 			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
+			if ( isNaN(cx) ) { cx = 0 }
+			if ( isNaN(cy) ) { cy = 0 }
 
 			positions[i]     = zoom * X
 			positions[i + 1] = zoom * Y
@@ -86,7 +88,7 @@ function render() {
 	} // make 0,0,-R
 	positions[i]   = 0
 	positions[i+1] = 0
-	positions[i+2] = zoom * radius(obj, axs, rads)
+	positions[i+2] = -zoom * radius(obj, axs, rads)
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -114,10 +116,10 @@ function makeGeometry() {
 	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	// points = new THREE.Points( geometry, material );
 
-	const map = new THREE.TextureLoader().load('files/dockside.jpg');
+	//const map = new THREE.TextureLoader().load('files/brix04.jpg');
 	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
-	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
+	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
+	const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
 	//points = new THREE.Points( geometry, material );
@@ -140,7 +142,7 @@ function makeGeometry() {
 				indices.push(j*rad + (i + 1)%(rad + 1) + hk, j%2 + i + jr, jr + ir)
 			} else {
 				indices.push(j*rad + i, jr + ir, jr + ir - rad)
-				indices.push(rad*(j+1) + i, jr + ir, rad*(j + 1) + i - rad)
+				indices.push(rad*(j + 1) + i, jr + ir, rad*(j + 1) + i - rad)
 			}
 		}
 	}
@@ -193,7 +195,6 @@ function makeUVs () {
 		}
 		j -= 1/ax
 		i = 0
-		//i = (k%2) * Math.sin(k*PI/ax) 
 	}
 }
 
@@ -310,7 +311,7 @@ return R
 
 function makeObjects() {
 	objects[0]  = ["calibration vector", 10, "`"]
-	objects[1] = ["helioquake", 24, "_9"]
+	objects[1]  = ["helioquake", 24, "_9"]
 	objects[2]  = ["mass ejection", 350, "_1"]
 	objects[3]  = ["probability field", 16, "r"]
 	objects[4]  = ["harmonic resonance", 35, "u"]
@@ -337,16 +338,6 @@ function makeObjects() {
 	objects[25] = ["self mover", 300, "_8"]
 	objects[26] = ["spirogyra", 120, "_7"]
 	objects[27] = ["magneto storm", 20, "m"]
-
-//	objects[1]  = ["spacetime manifold", 30, "."]
-//	objects[10] = ["tidal disruption", 320, "h"]
-//	objects[12] = ["unstable nucleus", 30, ","]
-//	objects[21] = ["range anomaly", 10, "j"]
-//	objects[32] = ["new", 10, "/"]
-//	objects[33] = ["new", 10, ";"]
-//	objects[34] = ["new", 10, "["]
-//	objects[35] = ["new", 10, "]"]
-
 }
 
 function label() {
@@ -354,7 +345,7 @@ function label() {
 	document.getElementById('hud').innerHTML = "";
 	if (clean) return -1
 	var sp, sd, so = ""
-	document.getElementById('hud').innerHTML += bp + "object: " + objects[obj][0] + " [" + obj + "]" + so + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "object: " + objects[obj][0] + " [" + obj + objects[obj][2] + "]" + so + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "zscale: " + objects[obj][1] + "-" + pix + "-" + ny + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>";
