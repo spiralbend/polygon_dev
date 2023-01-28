@@ -20,17 +20,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
-let container, camera, scene, renderer, light, ambientLight
+let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
-const PI = Math.PI
-
-var obj = 10, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
+var obj = 5, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
-var frames = 0, pars = 8, rotate = true, ny = 0, time = 0, wait = 0
-var stopped = false, clean = true, discrete = true, dorando = false
-var grain = 3000, pix = 0.1, edge = 5, zoom = 1, radi = 1, dc = 0.15
-var ax = 450, rad = 150, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads / dr)
+var stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8, rotate = true
+var grain = 3000, pix = 1, edge = 5, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
+var ax = 450, rad = 150, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -60,7 +57,6 @@ function render() {
 	positions[0] = 0
 	positions[1] = 0
 	positions[2] = zoom * radius(obj, 0, 0)
-	//positions[2] = radi * zoom
 	for ( let j = 0; j < ax - 1; j++) {
 		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
@@ -87,11 +83,10 @@ function render() {
 		iy = (iy + 0.02)
 		PHI += dax		
 
-	} // now make 0,0,-R
+	} // make 0,0,-R
 	positions[i]   = 0
 	positions[i+1] = 0
 	positions[i+2] = zoom * radius(obj, axs, rads)
-	//positions[i+2] = -radi * zoom
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -119,9 +114,9 @@ function makeGeometry() {
 	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	// points = new THREE.Points( geometry, material );
 
-	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: false } );
-	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	const map = new THREE.TextureLoader().load('files/uvgrid.jpg');
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: false } );
+	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
@@ -134,7 +129,7 @@ function makeGeometry() {
 	for (let k = 1; k <= rad; k++) {
 		indices.push(0, k, k%rad + 1)
 	}
-	//do not look in here; go away; shut up
+	//do not look in here; go away; also shut up
 	for (let j = 0; j < ax-2; j++) {
 		for (let i = 1; i <= rad; i++) {
 			let ir = i%rad + 1
