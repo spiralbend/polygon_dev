@@ -22,12 +22,12 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
-var obj = 10, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
+var obj = 0, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
 var rotate = true, stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8
-var grain = 5000, pix = 1, edge = 5, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
-var ax = 100, rad = 100, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var grain = 5000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
+var ax = 250, rad = 250, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -116,10 +116,10 @@ function makeGeometry() {
 	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	// points = new THREE.Points( geometry, material );
 
-	//const map = new THREE.TextureLoader().load('files/brix04.jpg');
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
+	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
+	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
-	const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
+	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
 	//points = new THREE.Points( geometry, material );
