@@ -22,12 +22,12 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
-var obj = 5, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
+var obj = 10, stat = 1, dt = 0.005, dr = 0.005, nits = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
 var stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8, rotate = true
-var grain = 3000, pix = 1, edge = 5, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
-var ax = 450, rad = 150, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var grain = 2500, pix = 1, edge = 5, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
+var ax = 250, rad = 250, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -58,7 +58,7 @@ function render() {
 	positions[1] = 0
 	positions[2] = zoom * radius(obj, 0, 0)
 	for ( let j = 0; j < ax - 1; j++) {
-		let THETA = 0 + (drad/2) * (j%2)
+		let THETA = 0 //+ (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
@@ -114,9 +114,9 @@ function makeGeometry() {
 	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	// points = new THREE.Points( geometry, material );
 
-	const map = new THREE.TextureLoader().load('files/uvgrid.jpg');
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, side: THREE.DoubleSide, flatShading: false } );
-	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, side: THREE.DoubleSide } );
+	const map = new THREE.TextureLoader().load('files/dockside.jpg');
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
+	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
@@ -184,14 +184,16 @@ function init() {
 }
 
 function makeUVs () {
-	let i=0, j=0
-	for (let k=0; k<rad+1; k++) {
-		for (let l=0; l<=ax; l++) {
-			uvs.push((i*Math.cos(j)+0.5), (i*Math.sin(j)+0.5));
-		 	i += 1/(2*ax)
+	let i=0, j=1
+	uvs.push(0,1)
+	for (let k=1; k<ax; k++) {
+		for (let l=1; l<=rad; l++) {
+			uvs.push(i,j);
+		 	i += 1/rad
 		}
-		j += rad/rads
+		j -= 1/ax
 		i = 0
+		//i = (k%2) * Math.sin(k*PI/ax) 
 	}
 }
 
