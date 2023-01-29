@@ -70,7 +70,7 @@ function render() {
 			if ( isNaN(cx) ) { cx = 0 }
 			if ( isNaN(cy) ) { cy = 0 }
 
-			positions[i]     = zoom * X
+			positions[i]   = zoom * X
 			positions[i+1] = zoom * Y
 			positions[i+2] = zoom * Z
 			colors[i]     = r_color[cx][cy]
@@ -102,6 +102,8 @@ function render() {
 	label()
 	frames++; wait--
 	time += 0.012 * stat
+
+	if (frames == 5) { console.log(positions.length, noise.length, dn.length, colors.length) }
 
 }
 
@@ -136,7 +138,7 @@ function makeGeometry() {
 	for (let k = 1; k <= rad; k++) {
 		indices.push(0, k, k%rad + 1)
 	}
-	//do not look in here; go away; also shut up
+	//don't look in here; go away; also shut up
 	for (let j = 0; j < ax-2; j++) {
 		for (let i = 1; i <= rad; i++) {
 			let ir = i%rad + 1
@@ -160,10 +162,12 @@ function makeGeometry() {
 		noise[i]   = Math.random() * flip() / 4
 		noise[i+1] = Math.random() * flip() / 4
 		noise[i+2] = Math.random() * flip() / 4
-		dn[i] =      Math.random() / 10
-		dn[i + 1] =  Math.random() / 10
-		dn[i + 2] =  Math.random() / 10
+		dn[i]      = Math.random() / 10
+		dn[i + 1]  = Math.random() / 10
+		dn[i + 2]  = Math.random() / 10
 	}
+
+	console.log(indices.length, indices.length/3)
 }
 
 function init() {
@@ -201,7 +205,7 @@ function init() {
 
 function makeUVs () {
 	let i=0, j=1
-	uvs.push(0,1)
+	uvs.push(0.5,1)
 	for (let k=1; k<ax; k++) {
 		for (let l=1; l<=rad; l++) {
 			uvs.push(i,j);
@@ -210,6 +214,7 @@ function makeUVs () {
 		j -= 1/ax
 		i = 0
 	}
+	uvs.push(0.5,0)
 }
 
 function animate() {
