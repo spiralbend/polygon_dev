@@ -22,10 +22,10 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
-var obj = 0, stat = 1, dt = 0.005, dr = 0.005, noise = [], uvs = []
 const objects = Array.from(Array(3),() => new Array(3))
 
-var rotate = true, stopped = false, clean = true, discrete = true, dorando = false, frames = 0, pars = 8
+var obj = 0, stat = 1, dt = 0.005, dr = 0.002, noise = [], dn = [], uvs = []
+var rotate = true, stopped = false, clean = true, dorando = false, frames = 0, pars = 8
 var grain = 5000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
 var ax = 250, rad = 250, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
@@ -44,7 +44,6 @@ function render() {
 	camera.lookAt( scene.position )
 	var positions = points.geometry.attributes.position.array
 	var colors = points.geometry.attributes.color.array;
-	let dex = Math.floor(Math.random() * numP3)
 	let i = 3
 	
 	if (rotate) { 
@@ -63,34 +62,37 @@ function render() {
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
-			let X = R * Math.sin(PHI) * Math.cos(THETA) + noise[dex]           * ny * 2
-			let Y = R * Math.sin(PHI) * Math.sin(THETA) + noise[(dex+1)%numP3] * ny * 2
-			let Z = R * Math.cos(PHI)                   + noise[(dex+2)%numP3] * ny * 2
-
+			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[i])   * ny
+			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[i+1]) * ny
+			let Z = R * Math.cos(PHI)                   + Math.sin(noise[i+2]) * ny
 			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
 			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
 			if ( isNaN(cx) ) { cx = 0 }
 			if ( isNaN(cy) ) { cy = 0 }
 
 			positions[i]     = zoom * X
-			positions[i + 1] = zoom * Y
-			positions[i + 2] = zoom * Z
+			positions[i+1] = zoom * Y
+			positions[i+2] = zoom * Z
 			colors[i]     = r_color[cx][cy]
-			colors[i + 1] = g_color[cx][cy]
-			colors[i + 2] = b_color[cx][cy]
-
+			colors[i+1] = g_color[cx][cy]
+			colors[i+2] = b_color[cx][cy]
 			i += 3;
 			THETA += drad
-			dex = (dex + 3) % numP3
+
 		}
 		ix = (ix + 0.05)
 		iy = (iy + 0.02)
 		PHI += dax		
-
 	} // make 0,0,-R
 	positions[i]   = 0
 	positions[i+1] = 0
 	positions[i+2] = -zoom * radius(obj, axs, rads)
+	
+	for (let j = 0; j < numP3; j += 3) {
+		noise[j]   += dn[j]
+		noise[j+1] += dn[j+1]
+		noise[j+2] += dn[j+2]
+	}
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -118,10 +120,10 @@ function makeGeometry() {
 	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	// points = new THREE.Points( geometry, material );
 
-	//const map = new THREE.TextureLoader().load('files/dockside.jpg');
-	const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
+	const map = new THREE.TextureLoader().load('files/h2o.jpg');
+	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
+	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
 	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
 
@@ -158,6 +160,9 @@ function makeGeometry() {
 		noise[i]   = Math.random() * flip() / 4
 		noise[i+1] = Math.random() * flip() / 4
 		noise[i+2] = Math.random() * flip() / 4
+		dn[i] =      Math.random() / 10
+		dn[i + 1] =  Math.random() / 10
+		dn[i + 2] =  Math.random() / 10
 	}
 }
 
@@ -275,6 +280,7 @@ function setup() {
 		v[q]  = edge * Math.sin(w[q])
 	}
 }
+
 function radius(obj,th,ph) {
 
 	let R, mag = objects[obj][1]
@@ -313,8 +319,8 @@ function radius(obj,th,ph) {
 		default: R = 100; break
 
 	}
-if ( isNaN(R) ) { return 1 }
-return R
+	if ( isNaN(R) ) { return 1 }
+	return R
 
 }
 
@@ -371,14 +377,6 @@ function label() {
 
 }
 
-function onWindowResize() {
-	windowHalfX = window.innerWidth / 2;
-	windowHalfY = window.innerHeight / 2;
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
 document.body.style.overflow = 'hidden'
 document.onkeydown = function(e) {
 	switch (e.keyCode) { 
@@ -425,7 +423,6 @@ document.onkeydown = function(e) {
 		case 68: colormap(); break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
 		case 65: rotate = !rotate; break //a rotate on/off
-		case 70: discrete = !discrete; break //f fuzzy on/off
 		case 75: ny = (ny + 1) % 6;	break //k noise level
 		case 32: //space reverse time
 			e.preventDefault()
@@ -451,6 +448,14 @@ document.onkeydown = function(e) {
 			}
 			break
 	}
+}
+
+function onWindowResize() {
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
 }
 		</script>
 	</body>
