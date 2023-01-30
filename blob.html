@@ -238,7 +238,7 @@ function makeUVs () {
 	}
 	uvs.push(0.5,0)
 	if (frames == 0) {
-		console.log("uvs", uvs.length/2, "\ni  ", i, "\nj  ", j);
+		console.log("uvs", uvs.length/2);
 	}
 }
 
@@ -457,9 +457,9 @@ document.onkeydown = function(e) {
 		case 65: rotate = !rotate; break //a rotate on/off
 		case 75: ny = (ny + 1) % 6;	break //k noise level
 		case 39: mat = (mat + 1) % 5; makeGeometry(); break //right arrow change material
-		case 37: mat = (mat - 1) % 5; makeGeometry(); break //left arrow change material
+		case 37: mat -= 1; if (mat < 0) {mat = 4}; makeGeometry(); break //left arrow change material
 		case 38: tdx = (tdx + 1) % tex.length; makeGeometry(); break //up arrow change texture
-		case 40: tdx = (tdx - 1) % tex.length; makeGeometry(); break //dn arrow change texture
+		case 40: tdx -= 1; if (tdx < 0) {tdx = tex.length-1}; makeGeometry(); break //dn arrow change texture
 		case 32: //space reverse time
 			e.preventDefault()
 			for (var q = 0; q <= pars; q++) {
