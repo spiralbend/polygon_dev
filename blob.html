@@ -24,10 +24,10 @@ let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY
 const objects = Array.from(Array(3),() => new Array(3))
 
-var obj = 0, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, noise = [], dn = [], uvs = [], tex = []
+var obj = 5, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, noise = [], dn = [], uvs = [], tex = []
 var rotate = true, stopped = false, clean = true, dorando = false, lim = true, frames = 0, pars = 8, mat = 0
-var grain = 10000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
-var ax = 300, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0
+var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -62,9 +62,9 @@ function render() {
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
-			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[idx])   * ny
-			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[idx+1]) * ny
-			let Z = R * Math.cos(PHI)                   + Math.sin(noise[idx+2]) * ny
+			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[idx])   * nz
+			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[idx+1]) * nz
+			let Z = R * Math.cos(PHI)                   + Math.sin(noise[idx+2]) * nz
 			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
 			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
 			if ( isNaN(cx) ) { cx = 0 }
@@ -87,12 +87,6 @@ function render() {
 	positions[idx]   = 0
 	positions[idx+1] = 0
 	positions[idx+2] = -zoom * radius(obj, axs, rads)
-	
-	for (let j = 0; j < numP3; j += 3) {
-		noise[j]   += dn[j]
-		noise[j+1] += dn[j+1]
-		noise[j+2] += dn[j+2]
-	}
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -120,11 +114,6 @@ function makeGeometry() {
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
-
-	//Point Cloud 
-	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	//points = new THREE.Points( geometry, material );
 
 	const map = new THREE.TextureLoader().load('files/textures/' + tex[tdx]);
 
@@ -251,6 +240,11 @@ function animate() {
 		w[q] += dv[q] * stat
 		v[q] = edge * Math.sin(w[q])
 	}
+	for (let j = 0; j < numP3; j += 3) {
+		noise[j]   += dn[j]
+		noise[j+1] += dn[j+1]
+		noise[j+2] += dn[j+2]
+	}
 }
 
 function flip() {
@@ -309,6 +303,7 @@ function setup() {
 		dv[q] = (tv[q] - w[q]) / grain
 		v[q]  = edge * Math.sin(w[q])
 	}
+	dax = axs/ax; drad = rads/rad; rev = Math.round(rads/dr)
 }
 
 function radius(obj,th,ph) {
@@ -394,11 +389,12 @@ function label() {
 	var sp, sd, so = ""
 	document.getElementById('hud').innerHTML += bp + "object: " + objects[obj][0] + " [" + obj + objects[obj][2] + "]" + so + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>";
-	document.getElementById('hud').innerHTML += bp + "zscale: " + objects[obj][1] + "-" + pix + "-" + ny + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "zscale: " + objects[obj][1] + "-" + pix + "-" + nz + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "frames: " + frames + "</font><br><br>";
-	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;" + dt.toFixed(5) + "</font><br>";
+//	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;" + dt.toFixed(5) + "</font><br>";
+	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;" + ax + "-" + rad + "</font><br>";
 	document.getElementById('hud').innerHTML += bp + "+-+-+-+-+-+-+</font><br>";
 	
 	for (var q = 0; q <= pars; q++) {
@@ -455,11 +451,47 @@ document.onkeydown = function(e) {
 		case 68: lim = !lim; break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
 		case 65: rotate = !rotate; break //a rotate on/off
-		case 75: ny = (ny + 1) % 6;	break //k noise level
-		case 39: mat = (mat + 1) % 5; makeGeometry(); break //right arrow change material
-		case 37: mat -= 1; if (mat < 0) {mat = 4}; makeGeometry(); break //left arrow change material
-		case 38: tdx = (tdx + 1) % tex.length; makeGeometry(); break //up arrow change texture
-		case 40: tdx -= 1; if (tdx < 0) {tdx = tex.length-1}; makeGeometry(); break //dn arrow change texture
+		case 75: nz = (nz + 1) % 6;	break //k noise level
+		case 39: //right arrow change material or increase rad
+			if (e.shiftKey) {
+				rad = Math.round(rad * 1.2)
+				setup()
+			} else {
+				mat = (mat + 1) % 5
+			}
+			makeGeometry()
+			break
+		case 37: //left arrow change material or reduce rad
+			if (e.shiftKey) {
+				rad = Math.round(rad * 0.8)
+				if (rad < 3) { rad = 3}
+				setup()
+			} else {
+				mat -= 1
+				if (mat < 0) {mat = 4};
+			}
+			makeGeometry()
+			break
+		case 38: //up arrow change texture or increase ax
+			if (e.shiftKey) {
+				ax = Math.round(ax * 1.2)
+				setup()
+			} else {
+				tdx = (tdx + 1) % tex.length
+			}
+			makeGeometry()
+			break
+		case 40: //dn arrow change texture or reduce ax
+			if (e.shiftKey) {
+				ax = Math.round(ax * 0.8)
+				if (ax < 3) { ax = 3}
+				setup()
+			} else {
+				tdx -= 1
+				if (tdx < 0) {tdx = tex.length-1}
+			}
+			makeGeometry()
+			break
 		case 32: //space reverse time
 			e.preventDefault()
 			for (var q = 0; q <= pars; q++) {
