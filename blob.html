@@ -21,13 +21,13 @@ import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
-var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY, ns, s
+var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY
 const objects = Array.from(Array(3),() => new Array(3))
 
-var obj = 0, stat = 1, dt = 0.005, dr = 0.002, noise = [], dn = [], uvs = []
-var rotate = true, stopped = false, clean = true, dorando = false, frames = 0, pars = 8
-var grain = 5000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
-var ax = 250, rad = 250, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var obj = 0, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, noise = [], dn = [], uvs = [], tex = []
+var rotate = true, stopped = false, clean = true, dorando = false, lim = true, frames = 0, pars = 8, mat = 0
+var grain = 10000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, ny = 0, time = 0, wait = 0
+var ax = 300, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -44,7 +44,7 @@ function render() {
 	camera.lookAt( scene.position )
 	var positions = points.geometry.attributes.position.array
 	var colors = points.geometry.attributes.color.array;
-	let i = 3
+	let idx = 3
 	
 	if (rotate) { 
 		points.rotateX(dr)
@@ -62,31 +62,31 @@ function render() {
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
-			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[i])   * ny
-			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[i+1]) * ny
-			let Z = R * Math.cos(PHI)                   + Math.sin(noise[i+2]) * ny
+			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[idx])   * ny
+			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[idx+1]) * ny
+			let Z = R * Math.cos(PHI)                   + Math.sin(noise[idx+2]) * ny
 			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
 			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
 			if ( isNaN(cx) ) { cx = 0 }
 			if ( isNaN(cy) ) { cy = 0 }
 
-			positions[i]   = zoom * X
-			positions[i+1] = zoom * Y
-			positions[i+2] = zoom * Z
-			colors[i]     = r_color[cx][cy]
-			colors[i+1] = g_color[cx][cy]
-			colors[i+2] = b_color[cx][cy]
-			i += 3;
+			positions[idx]   = zoom * X
+			positions[idx+1] = zoom * Y
+			positions[idx+2] = zoom * Z
+			colors[idx]      = r_color[cx][cy]
+			colors[idx + 1]  = g_color[cx][cy]
+			colors[idx + 2]  = b_color[cx][cy]
+			idx += 3;
 			THETA += drad
 
 		}
 		ix = (ix + 0.05)
 		iy = (iy + 0.02)
-		PHI += dax		
+		PHI += dax
 	} // make 0,0,-R
-	positions[i]   = 0
-	positions[i+1] = 0
-	positions[i+2] = -zoom * radius(obj, axs, rads)
+	positions[idx]   = 0
+	positions[idx+1] = 0
+	positions[idx+2] = -zoom * radius(obj, axs, rads)
 	
 	for (let j = 0; j < numP3; j += 3) {
 		noise[j]   += dn[j]
@@ -103,14 +103,18 @@ function render() {
 	frames++; wait--
 	time += 0.012 * stat
 
-	if (frames == 5) { console.log(positions.length, noise.length, dn.length, colors.length) }
+	if (frames == 5) { console.log("pos", positions.length, "\nnoi", noise.length, "\ndn ", dn.length, "\ncol", colors.length) }
 
 }
 
 function makeGeometry() {
+
 	numParticles = rad * (ax-1) + 2
 	numP3 = numParticles * 3
-	console.log(numParticles, numP3)
+	if (frames == 0) {
+		console.log("pts", numParticles, "\nxyz", numP3, "\nax ", ax, "\nrad", rad)
+	}
+
 	var positions = new Array(numP3), colors = new Array(numP3); makeUVs()
 	var geometry = new THREE.BufferGeometry();
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
@@ -118,21 +122,37 @@ function makeGeometry() {
 	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
 
 	//Point Cloud 
-	// const sprite = new THREE.TextureLoader().load( './files/circle.png' );
-	// const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
-	// points = new THREE.Points( geometry, material );
-
-	const map = new THREE.TextureLoader().load('files/h2o.jpg');
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide } );
-	const material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } );
-	//const material = new THREE.MeshBasicMaterial( { wireframe: false, vertexColors: true, color: 0xFFFFFF } );
-
+	//const sprite = new THREE.TextureLoader().load( './files/circle.png' );
+	//const material = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: true, alphaTest: 0.2, transparent: true } );
 	//points = new THREE.Points( geometry, material );
+
+	const map = new THREE.TextureLoader().load('files/textures/' + tex[tdx]);
+
+	switch(mat) {
+		case 0: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } ); break
+		case 1: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide } ); break
+		case 2: var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } ); break 
+		case 3: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } ); break
+		case 4: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } ); break
+	}
+
+	if (frames > 0) {
+		var x = points.rotation.x
+		var y = points.rotation.y
+		var z = points.rotation.z
+		scene.remove( points );
+	}
+
 	points = new THREE.Mesh( geometry, material );
-	scene.add( points )
-	points.rotateY(-PI/4)
+	scene.add( points );
+
+	if (frames > 0) { 
+	
+		points.rotateX(x);
+		points.rotateY(y);
+		points.rotateZ(z);
+	
+	}
 
 	var indices = []
 	for (let k = 1; k <= rad; k++) {
@@ -167,7 +187,9 @@ function makeGeometry() {
 		dn[i + 2]  = Math.random() / 10
 	}
 
-	console.log(indices.length, indices.length/3)
+	if (frames == 0) {
+		console.log("ind", indices.length, "\nfac", indices.length/3)
+	}
 }
 
 function init() {
@@ -215,6 +237,9 @@ function makeUVs () {
 		i = 0
 	}
 	uvs.push(0.5,0)
+	if (frames == 0) {
+		console.log("uvs", uvs.length/2, "\ni  ", i, "\nj  ", j);
+	}
 }
 
 function animate() {
@@ -325,6 +350,7 @@ function radius(obj,th,ph) {
 
 	}
 	if ( isNaN(R) ) { return 1 }
+	if ( lim && R > 500 ) { return 500 }
 	return R
 
 }
@@ -333,7 +359,7 @@ function makeObjects() {
 	objects[0]  = ["calibration vector", 10, "`"]
 	objects[1]  = ["helioquake", 24, "_9"]
 	objects[2]  = ["mass ejection", 350, "_1"]
-	objects[3]  = ["probability field", 16, "r"]
+	objects[3]  = ["probability field", 30, "r"]
 	objects[4]  = ["harmonic resonance", 35, "u"]
 	objects[5]  = ["quantum baseline", 8, "_2"]
 	objects[6]  = ["spike proteins", 150, "v"]
@@ -358,6 +384,7 @@ function makeObjects() {
 	objects[25] = ["self mover", 300, "_8"]
 	objects[26] = ["spirogyra", 120, "_7"]
 	objects[27] = ["magneto storm", 20, "m"]
+	tex = ["brix03.jpg", "brix04.jpg", "dockside.jpg", "earth_hd.jpg", "earth_mono.jpg", "earth_night.png", "h2o.jpg", "moon.jpg", "sri.jpg", "uvgrid.jpg" ]
 }
 
 function label() {
@@ -425,10 +452,14 @@ document.onkeydown = function(e) {
 		case 66: obj = 7;  break //b
 		case 78: obj = 8;  break //n
 		case 77: obj = 27;  break //m
-		case 68: colormap(); break //d shuffle palet
+		case 68: lim = !lim; break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
 		case 65: rotate = !rotate; break //a rotate on/off
 		case 75: ny = (ny + 1) % 6;	break //k noise level
+		case 39: mat = (mat + 1) % 5; makeGeometry(); break //right arrow change material
+		case 37: mat = (mat - 1) % 5; makeGeometry(); break //left arrow change material
+		case 38: tdx = (tdx + 1) % tex.length; makeGeometry(); break //up arrow change texture
+		case 40: tdx = (tdx - 1) % tex.length; makeGeometry(); break //dn arrow change texture
 		case 32: //space reverse time
 			e.preventDefault()
 			for (var q = 0; q <= pars; q++) {

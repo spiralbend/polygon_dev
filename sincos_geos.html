@@ -33,10 +33,10 @@ const THETA = 2*Math.PI/3; const PHI = 2*Math.PI/3
 var numParticles, numP3, positions, colors, noise, audioContent, audioStream, analyser, frequencyArray
 const objects = Array.from(Array(3),() => new Array(3)); var noise = []; var nits = []; var uvs = []
 
-var frames = 0; var pars = 9; var zoom = 1; var rotate = true; var ny = 0; var time = 0; var wait = 0
+var frames = 0; var pars = 9; var zoom = 1; var rotate = false; var ny = 0; var time = 0; var wait = 0
 var v = new Array(pars); var w = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
 var numColors = 50000; var colorspeed = 0.25; var argb = new Array(3); var drgb = new Array(3)
-var stopped = false; var clean = false; var soundOn = false; var discrete = false; var dorando = false
+var stopped = false; var clean = true; var soundOn = false; var discrete = false; var dorando = false
 var palet = Array.from(Array(3),() => new Array(numColors))
 
 // START
@@ -146,7 +146,7 @@ function makeUVs () {
 }
 
 function animate() {
-	cubeCamera.update( renderer, scene );
+	//cubeCamera.update( renderer, scene );
 	animid = requestAnimationFrame( animate );
 	controls.update(); 
 	render();
@@ -195,7 +195,7 @@ function makeGeometry() {
 	var positions = new Array(numP3), colors = new Array(numP3)
     //makeUVs()
 	//const geometry = new THREE.BufferGeometry();
-    //const geometry = new THREE.SphereGeometry( 15, 64, 32 );
+    //const geometry = new THREE.SphereGeometry( 1, 10, 10 );
     //const geometry = new THREE.DodecahedronGeometry( 15 );
     //const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
     //const geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
@@ -204,20 +204,20 @@ function makeGeometry() {
 
 	//geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 	//geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-    //var material = new THREE.MeshBasicMaterial( { map: map, wireframe: false, vertexColors: false } );
+    var material = new THREE.MeshBasicMaterial( { map: map, wireframe: false, vertexColors: false } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true, vertexColors: true } );
     //var material = new THREE.MeshBasicMaterial( { color: 0xffff00, vertexColors: true } );
 
-	var cubeRenderTarget = new THREE.WebGLCubeRenderTarget( 256 );
-	cubeRenderTarget.texture.type = THREE.HalfFloatType;
+	// var cubeRenderTarget = new THREE.WebGLCubeRenderTarget( 256 );
+	// cubeRenderTarget.texture.type = THREE.HalfFloatType;
 
-	cubeCamera = new THREE.CubeCamera( 1, 1000, cubeRenderTarget );
-	var material = new THREE.MeshStandardMaterial( {
-		envMap: cubeRenderTarget.texture,
-		roughness: 0.05,
-		metalness: 1,
-		vertexColors: false
-	} );
+	// cubeCamera = new THREE.CubeCamera( 1, 1000, cubeRenderTarget );
+	// var material = new THREE.MeshStandardMaterial( {
+	// 	envMap: cubeRenderTarget.texture,
+	// 	roughness: 0.05,
+	// 	metalness: 1,
+	// 	vertexColors: false
+	// } );
 
 	if (frames > 0) {
 		var x = points.rotation.x
@@ -227,11 +227,12 @@ function makeGeometry() {
 	}
 	//const object = new THREE.Mesh( new THREE.IcosahedronGeometry( 15, 8 ), material );
 	//const object = new THREE.Mesh( new THREE.BoxGeometry( 20, 20, 20 ), material );
-	const object = new THREE.Mesh( new THREE.SphereGeometry( 15, 64, 32 ), material );
+	const object = new THREE.Mesh( new THREE.SphereGeometry( 1, 3, 3 ), material );
 	//const object = new THREE.Mesh( new THREE.DodecahedronGeometry( 15 ), material );
 	//const object = new THREE.Mesh( new THREE.TorusKnotGeometry( 10, 3, 100, 16 ), material );
 	//const object = new THREE.Mesh( new THREE.TorusGeometry( 10, 3, 16, 100 ), material );
 	scene.add( object );
+	console.log(object)
 	//points = new THREE.Mesh( geometry, material );
 	//scene.add( points ); might need to add this back
 
@@ -261,7 +262,7 @@ function init() {
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 8000 );
-	camera.position.set( 0, 0, 100 );
+	camera.position.set( 0, 0, 5 );
 	scene = new THREE.Scene();
 	scene.rotation.y = 0.5;
 
@@ -276,15 +277,15 @@ function init() {
 	controls.screenSpacePanning = true;
 	window.addEventListener( 'resize', onWindowResize );
 
-	new RGBELoader()
-		.setPath( './three.js/examples/textures/equirectangular/' )
-		.load( 'pedestrian_overpass_1k.hdr', function ( texture ) {
+	// new RGBELoader()
+	// 	.setPath( './three.js/examples/textures/equirectangular/' )
+	// 	.load( 'pedestrian_overpass_1k.hdr', function ( texture ) {
 
-			texture.mapping = THREE.EquirectangularReflectionMapping;
-			scene.background = texture;
-			scene.environment = texture;
+	// 		texture.mapping = THREE.EquirectangularReflectionMapping;
+	// 		scene.background = texture;
+	// 		scene.environment = texture;
 
-		} );
+	// 	} );
 	colormap();
 	makeObjects();
 	makeGeometry();
