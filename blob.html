@@ -103,6 +103,13 @@ function render() {
 
 function makeGeometry() {
 
+	if (frames > 0) {
+		var x = points.rotation.x
+		var y = points.rotation.y
+		var z = points.rotation.z
+		scene.remove( points );
+	}
+
 	numParticles = rad * (ax-1) + 2
 	numP3 = numParticles * 3
 	if (frames == 0) {
@@ -123,13 +130,6 @@ function makeGeometry() {
 		case 2: var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } ); break 
 		case 3: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } ); break
 		case 4: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } ); break
-	}
-
-	if (frames > 0) {
-		var x = points.rotation.x
-		var y = points.rotation.y
-		var z = points.rotation.z
-		scene.remove( points );
 	}
 
 	points = new THREE.Mesh( geometry, material );
@@ -448,6 +448,7 @@ document.onkeydown = function(e) {
 		case 66: obj = 7;  break //b
 		case 78: obj = 8;  break //n
 		case 77: obj = 27;  break //m
+		case 74: setup(); makeGeometry(); break //j wtfsrsly
 		case 68: lim = !lim; break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
 		case 65: rotate = !rotate; break //a rotate on/off
@@ -464,7 +465,7 @@ document.onkeydown = function(e) {
 		case 37: //left arrow change material or reduce rad
 			if (e.shiftKey) {
 				rad = Math.round(rad * 0.8)
-				if (rad < 3) { rad = 3}
+				if (rad < 3) {rad = 3}
 				setup()
 			} else {
 				mat -= 1
