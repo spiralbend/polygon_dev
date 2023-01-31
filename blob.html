@@ -24,10 +24,10 @@ let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY
 const objects = Array.from(Array(3),() => new Array(3))
 
-var obj = 5, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, noise = [], dn = [], uvs = [], tex = []
-var rotate = true, stopped = false, clean = true, dorando = false, lim = true, frames = 0, pars = 8, mat = 0
+var obj = 0, stat = 1, dt = 0.005, dr = 0.0025, tdx = 2, mat = 2, tex = [], noise = [], dn = [], uvs = []
+var rotate = false, stopped = false, clean = true, dorando = false, lim = true, frames = 0, pars = 8
 var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0
-var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var ax = 60, rad = 90, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -182,6 +182,23 @@ function makeGeometry() {
 	}
 }
 
+function makeUVs () {
+	let i=0, j=1
+	uvs.push(0.5,1)
+	for (let k=1; k<ax; k++) {
+		for (let l=1; l<=rad; l++) {
+			uvs.push(i,j);
+		 	i += 1/rad
+		}
+		j -= 1/ax
+		i = 0 + (k%2) * (drad/(4*PI))
+	}
+	uvs.push(0.5,0)
+	if (frames == 0) {
+		console.log("uvs", uvs.length/2);
+	}
+}
+
 function init() {
 	setup();
 	ambientLight = new THREE.AmbientLight( 0x404040 );
@@ -213,23 +230,6 @@ function init() {
 	makeGeometry();
 	scene.add( ambientLight );
 	scene.add( light );
-}
-
-function makeUVs () {
-	let i=0, j=1
-	uvs.push(0.5,1)
-	for (let k=1; k<ax; k++) {
-		for (let l=1; l<=rad; l++) {
-			uvs.push(i,j);
-		 	i += 1/rad
-		}
-		j -= 1/ax
-		i = 0
-	}
-	uvs.push(0.5,0)
-	if (frames == 0) {
-		console.log("uvs", uvs.length/2);
-	}
 }
 
 function animate() {
