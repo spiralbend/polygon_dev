@@ -58,7 +58,8 @@ function render() {
 	positions[1] = 0
 	positions[2] = zoom * radius(obj, 0, 0)
 	for ( let j = 0; j < ax - 1; j++) {
-		let THETA = 0
+		//let THETA = 0
+		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
