@@ -24,10 +24,10 @@ let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY
 const objects = Array.from(Array(3),() => new Array(3))
 
-var obj = 5, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 0, tex = [], noise = [], dn = [], uvs = []
-var rotate = true, stopped = false, clean = true, dorando = false, lim = true, max = 350, frames = 0, pars = 8
+var obj = 0, stat = 1, dt = 0.005, dr = 0.0025, tdx = 9, mat = 2, tex = [], noise = [], dn = [], uvs = []
+var rotate = false, stopped = false, clean = true, dorando = false, lim = true, max = 350, frames = 0, pars = 8
 var grain = 8000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0
-var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var ax = 4, rad = 6, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
 var r_color = Array.from(Array(colorx),() => new Array(colory))
@@ -89,6 +89,17 @@ function render() {
 	positions[idx+1] = 0
 	positions[idx+2] = -zoom * radius(obj, axs, rads)
 
+	//JANK
+	positions[60] = 212.1320343
+	positions[61] = 0
+	positions[62] = 212.1320343
+	positions[63] = 259.8076172
+	positions[64] = 150
+	positions[65] = 0
+	positions[66] = 212.1320343
+	positions[67] = 0
+	positions[68] = -212.1320343
+
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
 	points.geometry.computeVertexNormals()
@@ -111,7 +122,7 @@ function makeGeometry() {
 		scene.remove( points )
 	}
 
-	numParticles = rad * (ax-1) + 2
+	numParticles = rad * (ax-1) + 2 + 3 // + 3 is JANK
 	numP3 = numParticles * 3
 
 	var positions = new Array(numP3), colors = new Array(numP3); makeUVs()
@@ -168,6 +179,16 @@ function makeGeometry() {
 		indices.push(rad*(ax - 2 ) + k, 1 + rad*(ax - 1), 1 + rad*(ax - 2) + k%rad)
 	}
 
+	//JANK
+	indices[17] = 20
+	indices[50] = 20
+	indices[51] = 20
+	indices[53] = 21
+	indices[85] = 22
+	indices[88] = 22
+	indices[89] = 21
+	indices[107] = 22
+
 	geometry.setIndex( indices )
 
 	for (var i = 0; i < numP3; i += 3) {
@@ -182,9 +203,9 @@ function makeGeometry() {
 	if (frames == 0) {
 		console.log("pts", numParticles, "\nxyz", numP3, "\nax ", ax, "\nrad", rad)
 		console.log("ind", indices.length, "\nfac", indices.length/3)
-		//console.log( indices )
-		//console.log( uvs )
-		//console.log( points )
+		console.log( indices )
+		console.log( uvs )
+		console.log( points )
 	}
 
 }
@@ -201,6 +222,7 @@ function makeUVs () {
 		i = 0 + (k%2) * (drad/(4*PI))
 	}
 	uvs.push(0.5,0)
+	uvs.push(1,1,1.083333333,0.75,1,0.2) //JANK
 	if (frames == 0) {
 		console.log("uvs", uvs.length/2)
 	}
