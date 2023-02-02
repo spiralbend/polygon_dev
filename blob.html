@@ -27,7 +27,7 @@ const objects = Array.from(Array(3),() => new Array(3))
 
 var obj = 5, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 0, tex = [], noise = [], dn = [], uvs = []
 var rotate = true, stopped = false, clean = true, dorando = false, lim = true, max = 350, frames = 0, pars = 8
-var grain = 8000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0
+var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0
 var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
@@ -98,7 +98,7 @@ function render() {
 	frames++; wait--
 	time += 0.012 * stat
 
-	if (frames == 5) { console.log("pos", positions.length, "\nnoi", noise.length, "\ndn ", dn.length, "\ncol", colors.length, positions) }
+	if (frames == 5) { console.log("pos", positions.length, "\nnoi", noise.length, "\ndn ", dn.length, "\ncol", colors.length) }
 
 }
 
