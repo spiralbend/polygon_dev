@@ -58,7 +58,6 @@ function render() {
 	positions[1] = 0
 	positions[2] = zoom * radius(obj, 0, 0)
 	for ( let j = 0; j < ax - 1; j++) {
-		//let THETA = 0
 		let THETA = 0 + (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
 
@@ -148,7 +147,7 @@ function makeGeometry() {
 		indices.push(0, k, k%rad + 1)
 	}
 
-	//don't look in here; go away; also shut up
+	//don't look in here; go away. also shut up
 	for (let j = 0; j < ax-2; j++) {
 		for (let i = 1; i <= rad; i++) {
 			let ir = i%rad + 1
@@ -341,15 +340,6 @@ function radius(obj,th,ph) {
 		case 19: R = mag * Math.sqrt(5 + Math.abs(v[0]*Math.cos(v[7]*ph) + v[1]*Math.cos(v[6]*th) + v[2]*Math.cos(v[5]*ph+th) + v[3]*Math.cos(v[4]*th+ph) +
 					v[4]*Math.cos(v[3]*(ph+th)) + v[5]*Math.cos(v[2]*th*ph) + v[6]*Math.cos(v[1]*ph)/(ph+3) + v[7]*Math.cos(v[0]*th)/(th+3))); break
 		case 20: R = mag * (Math.cos(Math.cos(th + v[3]**2)) + v[4]*Math.log(10 + th * v[0] * Math.sin(v[1] * ph +  v[2] * th))); break
-		//case 1:  R = mag * (12 + Math.sin(v[0]*Math.cos(v[1] * (v[8]*th/ph+v[2]*v[6]))) - Math.cos(-1*v[3]*Math.sin(v[4] * (v[9]*ph-th+v[5]*v[7])))); break
-		//case 6:  R = mag * Math.log( ph * Math.sin(v[1]*th)**v[2] + v[3] * th * Math.cos(v[4]*ph) ); break
-		//case 7:  R = mag * (ph * Math.sin(v[1]*th)) ** (th * Math.cos(v[4]*ph)); R = Math.abs(Math.log(Math.abs(R))); break		
-		//case 9:  R = mag * (v[0] * Math.sin(v[1]*(th+v[7])) + v[3] * Math.cos(v[8]+ph)**v[5] + ph * Math.tan(v[6]*th)); break
-		//case 10: R = mag * Math.abs(Math.sin( Math.cos(v[6] * th) + Math.sin(v[9] * th * ph) + v[3] * Math.cos(th + ph) )); break
-		//case 12: R = mag * Math.log(ph) * Math.tan(Math.sin( Math.cos(v[6] * th) + v[2] * Math.sin(v[7] * th * ph) + v[3] * Math.log(v[8]**2 * (th + ph)) )); break
-		//case 18: R = mag * v[6] * Math.exp( Math.sin((th*v[0]) * (ph**2) * Math.exp ( (th+ph)**2 * Math.sin((ph*v[3])**2) )) ); break
-		//case 20: R = mag * Math.exp((Math.sin(v[1]*(th+ph)) * Math.cos(th+ph)**v[5]))**Math.sqrt(Math.abs(Math.tan(v[5]*ph*th)));; break
-		
 		default: R = 100; break
 
 	}
@@ -361,34 +351,26 @@ function radius(obj,th,ph) {
 
 function makeObjects() {
 	objects[0]  = ["calibration vector", 10, "`"]
-	objects[1] = ["magneto storm", 20, "t"] // make it t (was m)
+	objects[1] = ["magneto storm", 20, "t"]
 	objects[2]  = ["mass ejection", 350, "_1"]
 	objects[3]  = ["probability field", 30, "r"]
 	objects[4]  = ["harmonic resonance", 35, "u"]
 	objects[5]  = ["quantum baseline", 8, "_2"]
-	objects[6] = ["spirogyra", 120, "_7"] //was obj26
-	objects[7] = ["self mover", 300, "_8"] //was obj25
-	objects[8]  = ["plasma ball", 200, "i"] // make it i (was n)
-	objects[9] = ["lotus blossom", 120, "_6"] //was obj24
-	objects[10] = ["logic bomb", 100, "w"] //was obj22
+	objects[6] = ["spirogyra", 120, "_7"]
+	objects[7] = ["self mover", 300, "_8"]
+	objects[8]  = ["plasma ball", 200, "i"]
+	objects[9] = ["lotus blossom", 120, "_6"]
+	objects[10] = ["logic bomb", 100, "w"]
 	objects[11] = ["event horizon", 180, "q"]
-	objects[12] = ["core collapse", 320, "e"] //was obj23
+	objects[12] = ["core collapse", 320, "e"]
 	objects[13] = ["string theory", 250, "y"]
 	objects[14] = ["metric tensor", 350, "_4"]
 	objects[15] = ["double helix", 250, "p"]
 	objects[16] = ["grand design", 180, "_3"]
 	objects[17] = ["analytic continuation", 55, "_5"]
-	objects[18] = ["hypersurface gradient", 40, "o"] //was obj19
-	objects[19] = ["monkfish icecream", 60, "_0"] //was obj21
-	objects[20] = ["mystery obj", 60, "_9"] //was obj32
-	//objects[1]  = ["helioquake", 24, "_9"]
-	//objects[6]  = ["spike proteins", 150, "v"]
-	//objects[7]  = ["antimatter jellyfish", 500000, "b"]
-	//objects[9]  = ["wormhole topology", 30, "x"]
-	//objects[10] = ["gas giant", 10, "z"]	
-	//objects[12] = ["cosmic orchid", 140, "c"]	
-	//objects[18] = ["galactic embryo", 50, "i"]	
-	//objects[20] = ["braincast", 200, "t"]	
+	objects[18] = ["hypersurface gradient", 40, "o"]
+	objects[19] = ["monkfish icecream", 60, "_0"]
+	objects[20] = ["mystery obj", 60, "_9"]
 	tex = ["brix03.jpg", "brix04.jpg", "dockside.jpg", "earth_hd.jpg", "earth_mono.jpg", "earth_night.png", "h2o.jpg", "moon.jpg", "sri.jpg", "uvgrid.jpg" ]
 }
 
@@ -451,13 +433,13 @@ document.onkeydown = function(e) {
 		case 73: obj = 8; break //i
 		case 79: obj = 18; break //o
 		case 80: obj = 15; break //p
-		//case 90: obj = 10; break //z
-		//case 88: obj = 9; break //x
-		//case 67: obj = 12;  break //c
-		//case 86: obj = 6;  break //v
-		//case 66: obj = 7;  break //b
-		//case 78: obj = 8;  break //n
-		//case 77: obj = 27;  break //m
+		//case 90: obj = X; break //z
+		//case 88: obj = X; break //x
+		//case 67: obj = X;  break //c
+		//case 86: obj = X;  break //v
+		//case 66: obj = X;  break //b
+		//case 78: obj = X;  break //n
+		//case 77: obj = X;  break //m
 		case 74: setup(); makeGeometry(); break //j wtfsrsly
 		case 68: lim = !lim; break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
