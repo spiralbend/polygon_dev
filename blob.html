@@ -126,7 +126,7 @@ function makeGeometry() {
 
 	switch(mat) {
 		case 0: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } ); break
-		case 1: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide } ); break
+		case 1: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide, metalness: 1 } ); break
 		case 2: var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } ); break 
 		case 3: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } ); break
 		case 4: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } ); break
