@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>    
+<head>       
+<script type="text/javascript"
+src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
+</script>
+<script type="text/javascript">
+
+
+$(function() {
+	var canvas = document.getElementById('thiscanvas');
+	var ctx = canvas.getContext('2d');
+
+	var draw = function(ctx) {
+		for ( var xhtm = 0; xhtm < 1000; xhtm++ ) {
+			for ( var yhtm = 0; yhtm < 1000; yhtm++ ) {
+				var x1 = Math.floor(Math.random()*1000);
+			var y1 = Math.floor(Math.random()*1000);
+			var r = Math.floor(Math.random()*256);
+			var g = Math.floor(Math.random()*256);
+			var b = Math.floor(Math.random()*256);
+			ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+			ctx.fillRect(x1,y1,1,1);
+		}
+	};
+	draw(ctx);
+});
+
+
+</script>
+<style type="text/css">
+	#thiscanvas  {border:1px solid;position:absolute;top:0px;}
+</style>
+</head>
+<body style="position:relative;">
+<canvas  id="thiscanvas" width = 1001, height = 1001>
+</canvas>
+</body>
+</html>

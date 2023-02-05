@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+
+
+$(function() {
+	var canvas = document.getElementById('thiscanvas');
+	var ctx = canvas.getContext('2d');
+	var paint = '';
+	var maxIt = 50;
+	var xpix = 3000;
+	var x1 = 0; var y1 = 1;
+	var x2 = 0.5; var y2 = 0;
+	var xH = 0; var yH = 0;
+	var dx = Math.abs(x1 - x2) / xpix;
+	var ypix = Math.floor( Math.abs((y1 - y2) / (x1 - x2)) * xpix );
+	var comp = Math.floor( Math.log(xpix * ypix * maxIt) );
+	document.getElementById('stats').innerHTML = '0ops: ' + comp + '<br>dx: ' + dx + '<br>' + xpix + ' x ' + ypix + '<br>('+x1+','+y1+')<br>('+x2+','+y2+')';
+	document.getElementById('stats').style.fontSize='50px'
+	document.getElementById('stats').style.fontFamily='Arial'
+	var draw = function(ctx) {
+		for ( var xM = x1; xM <= x2; xM += dx ) {
+			for ( var yM = y1; yM >= y2; yM -= dx ) {
+				paint = '55,55,55';
+				var zA = xM; var zB = yM;
+				for ( var i = 0; i < maxIt; i++ ) {
+					var xt = Math.pow(zA, 2) - Math.pow(zB, 2) + xM;
+					var yt = 2 * zA * zB + yM;
+					zA = xt; zB = yt;
+					if ( Math.sqrt(Math.pow(zA, 2) + Math.pow(zB, 2)) > 2 ) {
+						var color = (i * maxIt) / 10 % 255;
+						paint = '0,' + color + ',0';
+						break;
+					}
+				}
+				ctx.fillStyle = 'rgb('+ paint +')';
+				ctx.fillRect(xH, yH, 1, 1);
+				yH++;
+			}
+			yH = 0; xH++;
+		}
+	};
+	ctx.fillStyle = 'rgb(255,255,255)';
+	draw(ctx);
+});
+
+
+</script>
+<style type="text/css">
+	#thiscanvas  {border:1px solid;position:absolute;top:0px;}
+</style>
+</head>
+<p id="stats"></p>
+<button type="button" onclick="draw(ctx)">render</button>
+<body style="position:relative;">	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<canvas  id="thiscanvas" width = 3000, height = 3000>
+</canvas>
+ok then what else?
+</body>
+</html>

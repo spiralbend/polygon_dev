@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+//BEGIN
+var canvas = document.getElementById('thiscanvas')
+var ctx = canvas.getContext('2d')
+var ink = "#FF0000"
+var pts = 80000
+var s = Math.random() * 10101; var ds = 0.0000002
+var z = 0; var dz = 0.02
+var X = 0; var Y = 0
+var xs = new Array(pts); var rs = new Array(pts)
+
+var draw = function(ctx) {
+	for (var t = 0; t <= pts; t++) {
+		var L = 0.75 * rs[t] * s
+		Y = xs[t] * Math.sin(L)
+		if (Y < 0) {
+			Y += 1600
+			X = 1400 + xs[t] * Math.cos(L)
+			ctx.fillStyle = "rgb(255,0," + (255-(0.003 * rs[t]) % 255) + ")"
+			ctx.fillRect(X,Y,3,3)
+		}
+	}
+}
+
+for (var i=0; i <= pts; i++) {
+	xs[i] = z; z += dz
+	rs[i] = pts - i + 1
+}
+
+setInterval(function() {
+	ctx.clearRect(0,0,5000,5000)
+	draw(ctx)
+	s += ds
+}, 50)
+
+document.getElementById('stats').innerHTML = 'curves by @spiralbend ©2021'
+document.getElementById('stats').style.fontSize='20px'
+document.getElementById('stats').style.fontFamily='Arial'
+//END
+});
+</script>
+<style type="text/css">
+	#thiscanvas  {border:1px solid;position:absolute;top:0px;background-color:black;}
+</style>
+</head>
+<p id="stats"></p><br><br>
+<!--<button type="button" onclick="draw(ctx)">render</button>-->
+<body style="position:relative;">
+<canvas id="thiscanvas" width = 5000, height = 5000>
+</canvas>
+wots uh the deal
+</body>
+</html>

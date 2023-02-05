@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+var canvas = document.getElementById('thiscanvas')
+var ctx = canvas.getContext('2d'); ctx.lineWidth = 1
+var cw = canvas.width; var ch = canvas.height
+var X=0; var Y=0
+var delay = 15
+
+var draw = function(ctx) {
+	ctx.strokeStyle = "#FF00FF"
+	ctx.beginPath()
+	ctx.moveTo(X,Y)
+	ctx.lineTo(100,100)
+	ctx.stroke()
+}
+
+init()
+var h = setInterval(main, delay)
+
+function main() {
+	draw(ctx)
+}
+
+function init() {
+//
+}
+
+document.getElementById('stats').innerHTML = 'Project by @spiralbend ©2021'
+document.getElementById('stats').style.fontSize='20px'
+document.getElementById('stats').style.fontFamily='Arial'
+document.onkeydown = function(e) {
+	switch (e.keyCode) { 
+		case 221: //dt++; break
+		case 219: //dt--; break
+		}
+	}
+});
+</script>
+<style type="text/css">
+	#thiscanvas {border:0px solid;position:absolute;top:0px;background-color:black;}
+</style>
+</head>
+<p id="stats"></p>
+<body style="position:relative;" bgcolor="black">
+<canvas id="thiscanvas" width=5000, height=5000>
+</canvas>
+Put it there, kid.
+</body>
+</html>

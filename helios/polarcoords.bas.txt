@@ -1,0 +1,175 @@
+'Some rando polar plots by spiralbend ;) FEB-2021
+
+mode 1,16
+CONST H=MM.Hres,V=MM.Vres
+H2=H/2:V2=V/2
+ho=H*0.15:vo=V*0.15
+dt=0.01:scale=110
+dim grad(7,1000):colormap()
+
+DO
+t=0
+
+AR=int(rnd*8):GE=int(rnd*8):BE=int(rnd*8)
+low=grad(AR,0  )+grad(GE,0  )+grad(BE,0  )
+mid=grad(AR,249)+grad(GE,249)+grad(BE,249)
+top=grad(AR,499)+grad(GE,499)+grad(BE,499)
+if (low+mid)<10 or (mid+top)<10 then GE=GE+2
+
+points=60000+int(rnd*60000)
+slope=int(100*(rnd*V)/(rnd*H))/100
+m=3+rnd(13)*10
+k=4+rnd(13)*10
+j=int(rnd*9)
+exp1=int(rnd*6)+2
+exp2=int(rnd*7)+1
+exp3=int(rnd*4)+2
+w=int(rnd*20)
+o=int(rnd*6)
+cs=rnd*3
+off=int(rnd*999)
+ofx=rnd*ho:ofy=rnd*vo
+ofr=rnd*2*pi
+seg=318.30988*(int(rnd*3)+1)
+
+if rnd*2<1 then dt=dt*-1
+if rnd*2<1 then slope=slope*-1
+if rnd*2<1 then ofx=ofx*-1
+if rnd*2<1 then ofy=ofy*-1
+if rnd*5<1 then m=int(m)
+
+wipescreen():cls
+
+'debug
+'?:? w'" :" AR GE BE seg':?" m="slope:? m:? k:? j"-"exp1 exp2 exp3
+
+for p=0 to points
+
+  R=scale*f(t)
+  X=H2+R*cos(t+ofr)+ofx
+  Y=V2+R*sin(t+ofr)+ofy
+
+  SELECT CASE cs
+  CASE >2.95: 'parametric (messy)
+    E=p mod 999
+  CASE >2:    'radial
+    tmp=(Y-V2-ofy)/(X-H2-ofx+0.000001)
+    E=(int( (atn(tmp) + (pi/2)) * seg ) + off) mod 999
+  CASE >1:    'annular
+    E=int(abs(R)) mod 999
+  CASE >0:    'lateral
+    E=sqr((X+slope*Y)^2/(slope^2+1)) mod 999
+  END SELECT
+
+  ink=rgb(grad(AR,E),grad(GE,E),grad(BE,E))
+  PIXEL X,Y,ink
+'  diff options for drawing (pixel seems best)
+'  BOX X-1.5,Y-1.5,3,3,,ink,ink
+'  CIRCLE X,Y,1,,,ink,ink
+'  LINE 0,0,H,0,,rgb(black)
+  t=t+dt
+
+next p
+LOOP
+
+Function f(z)
+SELECT CASE w
+CASE =19:
+  f=m*cos(sin(z)+cos(k*z)^exp3)
+CASE =18:
+  f=j+m*cos(z+cos(k*z)^exp1)
+CASE =17:
+  f=j+m*cos(z+tan(k*z)^exp1)
+CASE =16:
+  f=j+m*tan(z+cos(k*z*pi)^exp1)
+CASE =15:
+  f=k*cos(log(abs(z+m*tan(z)+1)^exp1))
+CASE =14:
+  f=sin(j*z)^exp2+k*cos(log(abs(z+m*tan(z)+1)^exp1))
+CASE =13:
+  f=sin(j*z)+tan(m+k*log(abs(z)+1))
+CASE =12:
+  f=sin(j*z)^exp1+tan(m+log(abs(z)/k+1))+cos(m)^exp2/exp2
+CASE =11:
+  f=sin(j*z)^exp1+tan(m+log(abs(z)/k+1))+cos(m*z)^exp2/exp2
+CASE =10:
+  f=sin(j*z)^exp1+tan(m+log(abs(z)/k+1))+exp2*cos(z)^exp2
+CASE =9:
+  f=tan(2*(sin(m*z)^exp1+cos(k*z)^exp2))
+CASE =8:
+  f=2.5*(sin(j+m*z)^2+cos(k*z)^2)
+CASE =0:
+  f=m*cos(k*z)
+CASE =1:
+  f=j+m*cos(k*z)
+CASE =2:
+  f=m*tan(k*z)
+CASE =3:
+  f=j+m*tan(k*z)
+CASE =4:
+  f=j+m*cos(z+cos(k*z))
+CASE =5:
+  f=j+m*tan(z+cos(k*z*pi))
+CASE =6:
+  f=j+m*cos(z+tan(k*z))
+CASE =7:
+  f=m*cos(tan(k*z))
+END SELECT
+End Function
+
+Sub colormap()
+  a=0:b=255
+  for d=0 to 249
+    grad(0,d)=0  :grad(0,d+250)=0  :grad(0,749-d)=0  :grad(0,999-d)=0
+    grad(1,d)=0  :grad(1,d+250)=a  :grad(1,749-d)=a  :grad(1,999-d)=0
+    grad(2,d)=a  :grad(2,d+250)=b  :grad(2,749-d)=b  :grad(2,999-d)=a
+    grad(3,d)=a  :grad(3,d+250)=255:grad(3,749-d)=255:grad(3,999-d)=a
+    grad(4,d)=b  :grad(4,d+250)=0  :grad(4,749-d)=0  :grad(4,999-d)=b
+    grad(5,d)=b  :grad(5,d+250)=a  :grad(5,749-d)=a  :grad(5,999-d)=b
+    grad(6,d)=255:grad(6,d+250)=255:grad(6,749-d)=255:grad(6,999-d)=255
+    grad(7,d)=255:grad(7,d+250)=b  :grad(7,749-d)=b  :grad(7,999-d)=255
+    a=a+1.024
+    b=255-a
+  next d
+End Sub
+
+Sub wipescreen()
+  sw=rnd*3
+  px=int(rnd*H)
+  py=int(rnd*V)
+  SELECT CASE sw
+  CASE >2.5:
+    sp=rnd
+    fs=H2*sp
+    if rnd*2>1 then fs=fs*-1
+    for u=0 to V
+      LINE H,V2-fs+u,0,V2+fs+u,,0
+      LINE H,V2-fs-u,0,V2+fs-u,,0
+      pause 1
+    next u
+  CASE >2:
+    sp=rnd*10+1
+    fs=V2/sp
+    if rnd*2>1 then fs=fs*-1
+    for u=0 to H
+      LINE H2+fs+u,0,H2-fs+u,V,,0
+      LINE H2+fs-u,0,H2-fs-u,V,,0
+      pause 1
+    next u
+  CASE >1:
+    for u=1 to 1000 step 10
+      CIRCLE px,py,u,,,0,0
+    next u
+  CASE >0:
+    for u=0 to H
+      LINE px,py,0,V-u,,0
+      LINE px,py,u,0,,0
+      LINE px,py,H,u,,0
+      LINE px,py,H-u,V,,0
+      pause 1
+    next u
+  END SELECT
+End Sub
+
+
+

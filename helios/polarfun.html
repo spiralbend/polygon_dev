@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	var canvas = document.getElementById('thiscanvas')
+	var ctx = canvas.getContext('2d')
+	var ink = "rgb(0,255,0)"
+	var scale = 60
+	var points = 90000// + Math.random() * 40000
+	var grain = 5000 + Math.random() * 5000
+	var t = 0
+	var dt = 0.001
+	var X = 0; var Y = 0
+	var c = 0
+	var e = 13
+	var f = 12
+	var g = 2
+	var h = 2
+	var i = 0
+	var j = 0
+	var k = 0
+	var m = 0
+	var n = 0
+	var e1 = 0
+	var e2 = 0
+	
+	var e; var f; var g; var h; var i;var j;var k;var m;var n;var e1;var e2;
+	var de; var df; var dg; var dh; var di;var dj;var dk;var dm;var dn;var de1;var de2;
+
+	document.getElementById('stats').innerHTML = 'wots all this then?'
+	document.getElementById('stats').style.fontSize='20px'
+	document.getElementById('stats').style.fontFamily='Arial'
+	
+	var draw = function(ctx) {
+		t=0
+		for ( var p = 0; p <= points; p += 1 ) {
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(Math.tan(k*t))**e2 ) //gold standard
+			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t) ) //kinda great
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.cos(Math.tan(k*t)**e1) ) //noisy star
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2) + 2**e2
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2) + 2**e2
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2) + 2**e2
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2 + Math.log(i*t))
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * (Math.cos(k*t)**e1) )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * (Math.tan(k*t)**e1) )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.tan(Math.cos(k*t)**e1) )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.tan(Math.cos(k*t))**e1 )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.cos(Math.cos(k*t))**e1 )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.cos(Math.sin(k*t))**e1 )
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2) + 2**e2
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2) + 2**e2
+//			R = scale * ( m * Math.sin(j*t)**e1 + n * Math.cos(k*t)**e2) + 2**e2
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * (Math.cos(k*t)**e1) )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * (Math.tan(k*t)**e1) )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.tan(Math.cos(k*t)**e1) )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.tan(Math.cos(k*t))**e1 )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.cos(Math.cos(k*t))**e1 )
+//			R = scale * ( m * Math.sin(j*t)**e2 + n * Math.cos(Math.sin(k*t))**e1 )
+			X = 1400+R*Math.cos(t)
+			Y = 900+R*Math.sin(t)
+//			ctx.fillStyle = 'rgb('+ ink +')'
+			ctx.fillStyle = ink
+			ctx.fillRect(X, Y, 1, 1)
+			t += dt
+		}
+	};
+
+	doRando()
+	flipIt()
+	getTargets()
+	flipTargets()
+	setDeltas()
+	
+	setInterval(function() {
+		doIncrements()
+		ctx.clearRect(0,0,5000,5000)
+		draw(ctx)
+		c++
+		ctx.font = "16px Consolas";
+		ctx.fillText("c: " + c,150,275);
+		ctx.fillText("i: " + i.toFixed(5),150,300);
+		ctx.fillText("j: " + j.toFixed(5),150,325);
+		ctx.fillText("k: " + k.toFixed(5),150,350);
+		ctx.fillText("m: " + m.toFixed(5),150,375);
+		ctx.fillText("n: " + n.toFixed(5),150,400);
+		ctx.fillText("a: " + e1.toFixed(5),150,425);
+		ctx.fillText("b: " + e2.toFixed(5),150,450);
+	}, 10)
+	
+	function doIncrements() {
+		i += di; if (Math.abs(i) > 13) {di *= -1}
+		j += dj; if (Math.abs(j) > 13) {dj *= -1}
+		k += dk; if (Math.abs(k) > 13) {dk *= -1}
+		m += dm; if (Math.abs(m) > 13) {dm *= -1}
+		n += dn; if (Math.abs(n) > 13) {dn *= -1}
+		e1 += de1; if (Math.abs(e1) > 13) {de1 *= -1}
+		e2 += de2; if (Math.abs(e2) > 13) {de2 *= -1}
+	}
+	function getTargets() {
+		ti = Math.random() * 16
+		tj = Math.random() * 16
+		tk = Math.random() * 16
+		tm = Math.random() * 16
+		tn = Math.random() * 16
+		te1 = Math.round(Math.random() * 16) + 1
+		te2 = Math.round(Math.random() * 16) + 1
+	}
+	function setDeltas() {
+		di = (ti - i)/grain
+		dj = (tj - j)/grain
+		dk = (tk - k)/grain
+		dm = (tm - m)/grain
+		dn = (tn - n)/grain
+		de1 = (te1 - e1)/grain
+		de2 = (te2 - e2)/grain
+	}
+	function flipIt() {
+		if (Math.random()*2>1) {i*=-1}
+		if (Math.random()*2>1) {j*=-1}
+		if (Math.random()*2>1) {k*=-1}
+		if (Math.random()*2>1) {m*=-1}
+		if (Math.random()*2>1) {n*=-1}
+		if (Math.random()*2>1) {e1*=-1}
+		if (Math.random()*2>1) {e2*=-1}
+	}
+	function flipTargets() {
+		if (Math.random()*2>1) {ti*=-1}
+		if (Math.random()*2>1) {tj*=-1}
+		if (Math.random()*2>1) {tk*=-1}
+		if (Math.random()*2>1) {tm*=-1}
+		if (Math.random()*2>1) {tn*=-1}
+		if (Math.random()*2>1) {te1*=-1}
+		if (Math.random()*2>1) {te2*=-1}
+	}
+	function doRando() {
+		i = Math.random() * 10
+		j = Math.random() * 10
+		k = Math.random() * 10
+		m = Math.random() * 10
+		n = Math.random() * 10
+		e1 = Math.round(Math.random() * 10) + 1
+		e2 = Math.round(Math.random() * 10) + 1
+	}
+});
+</script>
+<style type="text/css">
+	#thiscanvas  {border:1px solid;position:absolute;top:0px;background-color:black;}
+</style>
+</head>
+<p id="stats"></p><br><br>
+<!--<button type="button" onclick="draw(ctx)">render</button>-->
+<body style="position:relative;">	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br><br><br>
+<canvas id="thiscanvas" width = 5000, height = 5000>
+</canvas>
+this
+</body>
+</html>

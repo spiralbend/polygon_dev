@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>    
+<head>       
+<script type="text/javascript"
+src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
+</script>
+<script type="text/javascript">
+
+
+$(function() {
+	var canvas = document.getElementById('thiscanvas');
+	var ctx = canvas.getContext('2d');
+	var maxIterations = 5000;
+	var grain = 10000;
+	var order = 16;
+	var scale = Math.pow(2, order);
+	var xOff = 60.25 + scale / 4;
+	var yOff = 2;
+	var draw = function(ctx) {
+		for ( var xH = 0; xH < grain; xH++ ) {
+			for ( var yH = 0; yH < grain; yH++ ) {
+				var color = 50;
+				var xM = ( ( xH - ( grain / 2 ) ) / ( grain / 4 ) + xOff ) / scale;
+				var yM = ( ( yH - ( grain / 2 ) ) / ( grain / 4 ) + yOff ) / scale;
+				var itX = xM;
+				var itY = yM;
+				for ( var i = 0; i < maxIterations; i++ ) {
+					var itXtmp = Math.pow(itX, 2) - Math.pow(itY, 2) + xM;
+					var itYtmp = 2 * itX * itY + yM;
+					itX = itXtmp;
+					itY = itYtmp;
+					if ( Math.sqrt(Math.pow(itX, 2) + Math.pow(itY, 2)) > 2 ) {
+						color = (i * maxIterations) / 4 % 255;
+						break;
+					}
+				}
+				ctx.fillStyle = 'rgb(0,' + color + ',0)';
+				ctx.fillRect(xH, yH, 1, 1);
+			}
+		}
+	};
+	draw(ctx);
+});
+
+
+</script>
+<style type="text/css">
+	#thiscanvas  {border:1px solid;position:absolute;top:0px;}
+</style>
+</head>
+<body style="position:relative;">
+<canvas  id="thiscanvas" width = 10000, height = 10000>
+</canvas>
+</body>
+</html>

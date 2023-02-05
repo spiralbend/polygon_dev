@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	var canvas = document.getElementById('thiscanvas')
+	var ctx = canvas.getContext('2d')
+	var ink = "rgb(0,255,0)"
+
+	import Gradient from "javascript-color-gradient";
+	// const cg = new Gradient();
+	// const c1 = "#FF0000";
+	// const c2 = "#00FF00";
+	// cg.setMidpoint(100);
+	// cg.setGradient(c1,c2);
+
+	var idx = 0; var idx2 = 0
+	var scale = 50
+	var points = 80000 //80000
+	var grain = 40000 //12*10**4
+	var dt = 0.001
+	var obj = -1
+	var t = 0; var c = 0
+	var X = 0; var Y = 0
+	var pars = 6; var edge = 12
+	var v = new Array(pars); var tv = new Array(pars); var dv = new Array(pars)
+	
+	var draw = function(ctx) {
+		t=0
+		for (var p = 0; p <= points; p++) {
+//			obj=0; R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(Math.tan(v[4]*t))**v[5]) //gold standard
+			obj=1; R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(v[4]*t)) //kinda great
+//			obj=2; R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(v[4]*t)**v[5] + Math.log(v[6]*t)) //too big
+//			obj=3; R = scale * (v[0] * Math.sin(v[1]*t) + v[3] * Math.cos(v[4]*t)) //simple for reference
+//			obj=4; R = scale * (v[0] * Math.sin(v[1]*t)**v[2] + v[3] * Math.cos(Math.tan(v[4]*t)**v[5])) //noisy star
+//			obj=5; R = scale * Math.log( Math.sin(v[0]*t)**v[1] + v[2] * Math.cos(v[3]*t) ) //spiky sinister
+//			obj=6; R = scale * Math.sin(v[0]*t) ** Math.cos(v[1]*t) //squiggly jellyfish
+//			obj=7; R = scale * Math.sin(v[0]*t) ** (Math.cos(v[1]*t)**v[2]) //plasma ball
+//			obj=8; R = scale * Math.sin(v[0]*t)**v[1] * Math.cos(v[2]*t)**v[3] //open squiggles
+//			obj=9; R = scale * Math.tan(Math.sin(v[0]*t)) ** Math.tan(Math.cos(v[1]*t)**v[2]) //double squiggler
+//			obj=99; R = scale * Math.log(Math.sin(v[0]*t) ** Math.cos(v[1]*t)**v[2])
+			X = 1400+R*Math.cos(t); Y = 900+R*Math.sin(t)
+//			ctx.fillStyle = ink
+			idx = (Math.abs(Math.round(X))+1) % 256
+			idx2 = 255 - idx
+			ink = 'rgb(' + idx + ',' + idx2 + ',0)'
+			ctx.fillStyle = ink
+//			console.log(ink)
+			ctx.fillRect(X,Y,1,1)
+			t += dt
+		}
+	}
+
+	init()
+	setInterval(function() {
+		for (var q = 0; q <= pars; q++) {
+			v[q] += dv[q]
+			if (Math.abs(v[q]) > edge) {dv[q] *= -1}
+		}
+		ctx.clearRect(0,0,5000,5000)
+		draw(ctx)
+		c++
+		ctx.font = "16px Consolas";
+		ctx.fillText("points: " + points.toFixed(0),150,200);
+		ctx.fillText("zscale: " + scale.toFixed(2),150,225);
+		ctx.fillText("frames: " + c,150,250);
+		ctx.fillText("object: " + obj,150,275);
+		ctx.fillText("Δt: " + dt.toFixed(5),150,300);
+		for (var q = 0; q <= pars; q++) {
+			ctx.fillText("μ" + q + ": " + v[q].toFixed(5),150,325+q*25);
+		}
+	}, 15)
+
+	function init() {
+		for (var q = 0; q <= pars; q++) {
+			v[q] = Math.random()*edge
+			if (Math.random()*2>1) {v[q] *= -1}
+			tv[q] = Math.random()*edge*1.5
+			if (Math.random()*2>1) {tv[q] *= -1}
+			dv[q] = (tv[q] - v[q])/grain
+		}
+	}
+
+	document.getElementById('stats').innerHTML = 'curves by @spiralbend ©2021'
+	document.getElementById('stats').style.fontSize='20px'
+	document.getElementById('stats').style.fontFamily='Arial'
+	document.onkeydown = function(e) { 
+		switch (e.keyCode) { 
+			case 221: 
+				dt *= 1.01
+				break
+			case 219:
+				dt /= 1.01
+				break
+			case 187:
+				scale *= 1.05
+				break
+			case 189:
+				scale /= 1.05
+				break
+			case 48:
+				points *= 1.1
+				break
+			case 57:
+				points /= 1.1
+				break
+		}
+	}
+});
+</script>
+<style type="text/css">
+	#thiscanvas  {border:1px solid;position:absolute;top:0px;background-color:black;}
+</style>
+</head>
+<p id="stats"></p><br><br>
+<!--<button type="button" onclick="draw(ctx)">render</button>-->
+<body style="position:relative;">
+<canvas id="thiscanvas" width = 5000, height = 5000>
+</canvas>
+wots uh the deal
+</body>
+</html>
