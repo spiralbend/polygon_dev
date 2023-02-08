@@ -26,8 +26,8 @@ var points, geometry, controls, animid, numParticles, numP3, positions, colors, 
 const objects = Array.from(Array(3),() => new Array(3))
 
 var obj = 5, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 0, tex = [], noise = [], dn = [], uvs = []
-var rotate = true, stopped = false, clean = true, dorando = false, lim = true, max = 350, frames = 0, pars = 8
-var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0
+var rotate = true, stopped = false, clean = true, dorando = false, lim = true, replay = false, max = 350
+var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0, frames = 0, pars = 8
 var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
 var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
@@ -126,7 +126,7 @@ function makeGeometry() {
 
 	switch(mat) {
 		case 0: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: true, flatShading: false, side: THREE.DoubleSide } ); break
-		case 1: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide, metalness: 1 } ); break
+		case 1: var material = new THREE.MeshPhongMaterial( { specular: 0x202020, vertexColors: false, color: 0xFF00FF, flatShading: false, side: THREE.DoubleSide } ); break
 		case 2: var material = new THREE.MeshPhongMaterial( { map: map, specular: 0x000100, vertexColors: false, flatShading: false, side: THREE.DoubleSide } ); break 
 		case 3: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xFFFFFF } ); break
 		case 4: var material = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: false, color: 0xFFFFFF } ); break
@@ -204,8 +204,8 @@ function makeUVs () {
 }
 
 function init() {
-	setup();
-	ambientLight = new THREE.AmbientLight( 0x404040 );
+	setup()
+	ambientLight = new THREE.AmbientLight( 0x404040 )
 	light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 )
 	light.position.set( 0.32, 0.39, 0.7 )
 
@@ -237,6 +237,7 @@ function init() {
 }
 
 function setup() {
+	if (!replay) {
 	for (var q = 0; q <= pars; q++) {
 		w[q]  = Math.random() * edge * flip()
 		tv[q] = Math.random() * edge * flip() * 3
@@ -244,6 +245,22 @@ function setup() {
 		v[q]  = edge * Math.sin(w[q])
 	}
 	dax = axs/ax; drad = rads/rad; rev = Math.round(rads/dr)
+	} else {
+//START
+//END
+	}
+	
+}
+
+function dumpConfig() {
+	reverseTime()
+	let str = ""
+	for (var q = 0; q <= pars; q++) {
+		str += 'v[' + q + ']=' + v[q] + ';' + 'dv[' + q + ']=' + dv[q] + ';' + 'w[' + q + ']=' + w[q] + ';' 
+	}
+	str += '\ndr=' + dr + ';rad=' + rad + ';ax=' + ax + ';dax=' + axs/ax + ';drad=' + rads/rad + ';rev=' + Math.abs(Math.round(rads/dr)) + ';'
+	str += '\ncolorx=' + colorx + ';colory=' + colory + ';' + 'obj=' + obj + ';tdx=' + tdx + ';mat=' + mat + ';zoom=' + zoom + ';nz=' + nz + ';lim=' + lim + ';clean=' + clean + ';rotate=' + rotate
+	console.log(str)
 }
 
 function animate() {
@@ -275,6 +292,13 @@ function randomize() {
 	obj = Math.round( Math.random() * (objects.length - 2) + 1 )
 	setup()
 	colormap()
+}
+
+function reverseTime() {
+	for (var q = 0; q <= pars; q++) {
+		dv[q] *= -1
+	}
+	dr *= -1
 }
 
 function colormap() {
@@ -452,7 +476,9 @@ document.onkeydown = function(e) {
 		//case 66: obj = X;  break //b
 		//case 78: obj = X;  break //n
 		//case 77: obj = X;  break //m
-		case 74: setup(); makeGeometry(); break //j wtfsrsly
+		case 74: dumpConfig(); break //j save parameters
+		case 72: replay = true; setup(); makeGeometry(); break //h trigger replay
+		case 71: replay = !replay; break //g toggle replay
 		case 68: lim = !lim; break //d shuffle palet
 		case 76: clean = !clean; break //l label on/off
 		case 65: rotate = !rotate; break //a rotate on/off
@@ -499,10 +525,7 @@ document.onkeydown = function(e) {
 			break
 		case 32: //space reverse time
 			e.preventDefault()
-			for (var q = 0; q <= pars; q++) {
-				dv[q] *= -1
-			}
-			dr *= -1
+			reverseTime()
 			break
 		case 27: //ESC stop
 			if(stopped) {
