@@ -39,10 +39,12 @@ var rotate = true, stopped = false, clean = true, dorando = false, lim = true, r
 var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0, frames = 0, pars = 8
 var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
 
-var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
-var r_color = Array.from(Array(colorx),() => new Array(colory))
-var g_color = Array.from(Array(colorx),() => new Array(colory))
-var b_color = Array.from(Array(colorx),() => new Array(colory))
+var numColors = 256, colorspeed = 0.25
+// var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
+// var r_color = Array.from(Array(colorx),() => new Array(colory))
+// var g_color = Array.from(Array(colorx),() => new Array(colory))
+// var b_color = Array.from(Array(colorx),() => new Array(colory))
+var palet = Array.from(Array(3),() => new Array(numColors)), argb = new Array(3), drgb = new Array(3)
 var v = new Array(pars), w = new Array(pars), tv = new Array(pars), dv = new Array(pars)
 
 // START
@@ -128,28 +130,43 @@ function render() {
 			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[idx  ]) * nz
 			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[idx+1]) * nz
 			let Z = R * Math.cos(PHI)                   + Math.sin(noise[idx+2]) * nz
-			let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
-			let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
-			if ( isNaN(cx) ) { cx = 0 }
-			if ( isNaN(cy) ) { cy = 0 }
+			// let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
+			// let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
+			let Z0 = Math.floor(Math.abs(R)) % numColors
+			// if ( isNaN(cx) ) { cx = 0 }
+			// if ( isNaN(cy) ) { cy = 0 }
 
 			positions[idx]   = zoom * X
 			positions[idx+1] = zoom * Y
 			positions[idx+2] = zoom * Z
-			colors[idx]      = r_color[cx][cy]
-			colors[idx + 1]  = g_color[cx][cy]
-			colors[idx + 2]  = b_color[cx][cy]
+			colors[idx]      = palet[0][Z0]
+			colors[idx + 1]  = palet[1][Z0] 
+			colors[idx + 2]  = palet[2][Z0]
 			idx += 3;
 			THETA += drad
 
 		}
-		ix = (ix + 0.05)
-		iy = (iy + 0.02)
+		// ix = (ix + 0.05)
+		// iy = (iy + 0.02)
 		PHI += dax
 	} // make 0,0,-R
 	positions[idx]   = 0
 	positions[idx+1] = 0
 	positions[idx+2] = -zoom * radius(obj, axs, rads)
+
+	for (let i = 0; i < colorspeed; i++) {
+
+		for (var j = 0; j < 3; j++) {
+			argb[j] += drgb[j]
+		}
+
+		for (var j = 0; j < 3; j++) {
+			if      (argb[j] < 0.25) { argb[j] = 0.25; drgb[j] *= -1 }
+			else if (argb[j] > 1.0)  { argb[j] = 1.0;  drgb[j] *= -1 }
+			palet[j].unshift(argb[j]); palet[j].pop()
+		}
+
+	}
 
 	points.geometry.attributes.position.needsUpdate = true;
 	points.geometry.attributes.color.needsUpdate = true;
@@ -370,36 +387,21 @@ function reverseTime() {
 }
 
 function colormap() {
-	let k=0, m=0, cx1 = colorx - 1, cy4 = Math.round(colory/4)
-	for (let i=0; i<256; i += dc) {
-		for (let j=0; j<256; j += dc) {
-			r_color[k][m] = (255-j)/255
-			g_color[k][m] = (255-i)/255
-			b_color[k][m] = 0
-			r_color[cx1-k][m] = (255-j)/255
-			g_color[cx1-k][m] = (255-i)/255
-			b_color[cx1-k][m] = 0
-			r_color[k][m+3*cy4] = 1
-			g_color[k][m+3*cy4] = (255-i)/255
-			b_color[k][m+3*cy4] = (255-j)/255
-			r_color[cx1-k][m+3*cy4] = 1
-			g_color[cx1-k][m+3*cy4] = (255-i)/255
-			b_color[cx1-k][m+3*cy4] = (255-j)/255
-			r_color[k][m+2*cy4] = j/255
-			g_color[k][m+2*cy4] = (255-i)/255
-			b_color[k][m+2*cy4] = 1
-			r_color[cx1-k][m+2*cy4] = j/255
-			g_color[cx1-k][m+2*cy4] = (255-i)/255
-			b_color[cx1-k][m+2*cy4] = 1
-			r_color[k][m+cy4] = 0
-			g_color[k][m+cy4] = (255-i)/255
-			b_color[k][m+cy4] = j/255
-			r_color[cx1-k][m+cy4] = 0
-			g_color[cx1-k][m+cy4] = (255-i)/255
-			b_color[cx1-k][m+cy4] = j/255
-			m++
+	for (var i = 0; i < 3; i++) {
+		argb[i] = Math.random()
+		drgb[i] = Math.random() * 0.0051 * flip()
+	}
+	for (var i = 0; i <= numColors; i++) {
+
+		for (var j = 0; j < 3; j++) {
+			argb[j] += drgb[j]
+			if      (argb[j] < 0.23) { argb[j] = 0.23; drgb[j] *= -1 }
+			else if (argb[j] > 1.0)  { argb[j] = 1.0;  drgb[j] *= -1 }
+			palet[j][i] = argb[j]
 		}
-		k++; m = 0
+	}
+	for (var j = 0; j < 3; j++) {
+		argb[j] = palet[j][0]
 	}
 }
 
