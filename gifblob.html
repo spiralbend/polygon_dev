@@ -34,16 +34,13 @@ let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY
 const objects = Array.from(Array(3),() => new Array(3))
 
-var obj = 5, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 0, tex = [], noise = [], dn = [], uvs = []
+var obj = 6, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 1, tex = [], noise = [], dn = [], uvs = []
 var rotate = true, stopped = false, clean = true, dorando = false, lim = true, replay = false, max = 350
-var grain = 6000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0, frames = 0, pars = 8
-var ax = 200, rad = 300, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr)
+var grain = 5000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0, frames = 0, pars = 8
+var ax = 300, rad = 400, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr), rx = 0, ry = 0, rz = 0
+var secs = 15, hz = 30, wx = 600, wy = 500
 
-var numColors = 256, colorspeed = 0.25
-// var colorx = Math.round(512/dc), colory = 2*colorx, ix = 0, iy = 0
-// var r_color = Array.from(Array(colorx),() => new Array(colory))
-// var g_color = Array.from(Array(colorx),() => new Array(colory))
-// var b_color = Array.from(Array(colorx),() => new Array(colory))
+var numColors = 1024, colorspeed = 0.25
 var palet = Array.from(Array(3),() => new Array(numColors)), argb = new Array(3), drgb = new Array(3)
 var v = new Array(pars), w = new Array(pars), tv = new Array(pars), dv = new Array(pars)
 
@@ -51,57 +48,22 @@ var v = new Array(pars), w = new Array(pars), tv = new Array(pars), dv = new Arr
 init()
 animate()
 
-function generateGIF( element, renderFunction, duration = 1, fps = 30 ) {
-	const frame = duration * fps;
-	const canvas = document.createElement( 'canvas' );
-	canvas.width = element.width;
-	canvas.height = element.height;
-	console.log(canvas.width, canvas.height)
-	const context = canvas.getContext( '2d' );
-	const buffer = new Uint8Array( canvas.width * canvas.height * frame * 5 );
-	const pixels = new Uint8Array( canvas.width * canvas.height );
-	const writer = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
-	let current = 0;
-
-	return new Promise( async function addFrame( resolve ) {
-		renderFunction( current / frame );
-		context.drawImage( element, 0, 0 );
-		const data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
-		const palette = [];
-
-		for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
-			const r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
-			const g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
-			const b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
-			const color = r << 16 | g << 8 | b << 0;
-			const index = palette.indexOf( color );
-
-			if ( index === -1 ) {
-				pixels[ k ] = palette.length;
-				palette.push( color );
-			} else {
-				pixels[ k ] = index;
-			}
+function setup() {
+	if (!replay) {
+		for (var q = 0; q <= pars; q++) {
+			w[q]  = Math.random() * edge * flip()
+			tv[q] = Math.random() * edge * flip() * 3
+			dv[q] = (tv[q] - w[q]) / grain
+			v[q]  = edge * Math.sin(w[q])
 		}
-
-		// Force palette to be power of 2
-		let powof2 = 1;
-		while ( powof2 < palette.length ) powof2 <<= 1;
-		palette.length = powof2;
-		console.log(palette.length)
-		const delay = 100 / fps; // Delay in hundredths of a sec (100 = 1s)
-		const options = { palette: new Uint32Array( palette ), delay: delay };
-		writer.addFrame( 0, 0, canvas.width, canvas.height, pixels, options );
-		current ++;
-		progress.value = current / frames;
-
-		if ( current < frame ) {
-			await setTimeout( addFrame, 0, resolve );
-		} else {
-			resolve( buffer.subarray( 0, writer.end() ) );
-		}
-
-	} );
+		dax = axs/ax; drad = rads/rad; rev = Math.round(rads/dr)
+	} else {
+//START
+v[0]=-2.568211393135954;dv[0]=-0.0013220368894716905;w[0]=3.583910320491413;v[1]=0.10712265991020126;dv[1]=0.0025796208105441976;w[1]=-9.442632686060888;v[2]=5.921021838266558;dv[2]=0.001285570622122134;w[2]=-4.54995741758272;v[3]=2.944650335742949;dv[3]=-0.0014336471577681238;w[3]=2.6286135695991386;v[4]=-2.5144637675669985;dv[4]=0.002640213658236132;w[4]=-8.992349130043767;v[5]=0.30981368848154933;dv[5]=-0.00174071918051369;w[5]=9.373119372986636;v[6]=0.8053521550885563;dv[6]=-0.001383444243322355;w[6]=9.290146254457913;v[7]=-0.8787383065474315;dv[7]=0.00020714271638280266;w[7]=-0.14698507222581642;v[8]=0.7059470419207459;dv[8]=-0.0007678134703363509;w[8]=9.306846951844554;
+dr=0.0025;rad=4000;ax=3000;dax=0.010471975511965976;drad=0.015707963267948967;rev=2513;
+obj=6;tdx=0;mat=1;zoom=1;nz=0;lim=true;clean=true;rotate=true;rx=1.595392207786992;ry=-0.4462372469785072;rz=-0.8532613292607902
+//END
+	}	
 }
 
 function render() {
@@ -123,7 +85,7 @@ function render() {
 	positions[1] = 0
 	positions[2] = zoom * radius(obj, 0, 0)
 	for ( let j = 0; j < ax - 1; j++) {
-		let THETA = 0 + (drad/2) * (j%2)
+		let THETA = 0 //+ (drad/2) * (j%2)
 		for ( let k = 0; k < rad; k++ ) {
 
 			let R  = zoom * radius(obj, PHI, THETA)
@@ -184,9 +146,9 @@ function render() {
 function makeGeometry() {
 
 	if (frames > 0) {
-		var x = points.rotation.x
-		var y = points.rotation.y
-		var z = points.rotation.z
+		// var x = points.rotation.x
+		// var y = points.rotation.y
+		// var z = points.rotation.z
 		scene.remove( points )
 	}
 
@@ -216,9 +178,9 @@ function makeGeometry() {
 
 	if (frames > 0) { 
 	
-		points.rotateX(x)
-		points.rotateY(y)
-		points.rotateZ(z)
+		points.rotateX(rx)
+		points.rotateY(ry)
+		points.rotateZ(rz)
 	
 	}
 
@@ -299,7 +261,7 @@ function init() {
 
 	renderer = new THREE.WebGLRenderer( { antialias: true, canvas: canvas } )
 	renderer.setPixelRatio( window.devicePixelRatio )
-	renderer.setSize( 500, 500 );
+	renderer.setSize( wx, wy );
 	//renderer.setSize( window.innerWidth, window.innerHeight )
 	container.appendChild( renderer.domElement )
 
@@ -316,25 +278,6 @@ function init() {
 	scene.add( light )
 }
 
-function setup() {
-	if (!replay) {
-		for (var q = 0; q <= pars; q++) {
-			w[q]  = Math.random() * edge * flip()
-			tv[q] = Math.random() * edge * flip() * 3
-			dv[q] = (tv[q] - w[q]) / grain
-			v[q]  = edge * Math.sin(w[q])
-		}
-		dax = axs/ax; drad = rads/rad; rev = Math.round(rads/dr)
-	} else {
-//START
-v[0]=5.194013883820519;dv[0]=-0.000002049696672435412;w[0]=-4.188077797958974;v[1]=-1.205450804581253;dv[1]=-0.0029436551553791877;w[1]=-2.939307444218753;v[2]=3.7459177430684614;dv[2]=0.003104783011316238;w[2]=0.6742602576971328;v[3]=5.812645636820793;dv[3]=-0.0002585549623671446;w[3]=-4.461831195501972;v[4]=2.30029967785854;dv[4]=-0.0025026679999804874;w[4]=2.748135943704102;v[5]=-0.9429275802399164;dv[5]=0.0006152695842265099;w[5]=3.299401436635475;v[6]=-1.560357052463079;dv[6]=-0.0018391292152739147;w[6]=6.020101475536008;v[7]=-0.6711991234542805;dv[7]=-0.002324396023145739;w[7]=3.2536938164165647;v[8]=1.1658871478056148;dv[8]=-0.0028635692175970396;w[8]=0.19555860683325213;
-dr=-0.0025;rad=300;ax=200;dax=0.015707963267948967;drad=0.020943951023931952;rev=2513;
-colorx=3413;colory=6826;obj=5;tdx=0;mat=1;zoom=1;nz=0;lim=true;clean=true;rotate=true
-//END
-	}
-	
-}
-
 function dumpConfig() {
 	reverseTime()
 	let str = ""
@@ -342,7 +285,8 @@ function dumpConfig() {
 		str += 'v[' + q + ']=' + v[q] + ';' + 'dv[' + q + ']=' + dv[q] + ';' + 'w[' + q + ']=' + w[q] + ';' 
 	}
 	str += '\ndr=' + dr + ';rad=' + rad + ';ax=' + ax + ';dax=' + axs/ax + ';drad=' + rads/rad + ';rev=' + Math.abs(Math.round(rads/dr)) + ';'
-	str += '\ncolorx=' + colorx + ';colory=' + colory + ';' + 'obj=' + obj + ';tdx=' + tdx + ';mat=' + mat + ';zoom=' + zoom + ';nz=' + nz + ';lim=' + lim + ';clean=' + clean + ';rotate=' + rotate
+	str += '\nobj=' + obj + ';tdx=' + tdx + ';mat=' + mat + ';zoom=' + zoom + ';nz=' + nz + ';lim=' + lim + ';clean=' + clean + ';rotate=' + rotate
+	str += ';rx=' + points.rotation.x + ';ry=' + points.rotation.y + ';rz=' + points.rotation.z
 	console.log(str)
 }
 
@@ -455,7 +399,7 @@ function makeObjects() {
 	objects[10] = ["logic bomb", 100, "w"]
 	objects[11] = ["event horizon", 180, "q"]
 	objects[12] = ["core collapse", 320, "e"]
-	objects[13] = ["string theory", 250, "y"]
+	objects[13] = ["string theory", 200, "y"]
 	objects[14] = ["metric tensor", 350, "_4"]
 	objects[15] = ["double helix", 250, "p"]
 	objects[16] = ["grand design", 180, "_3"]
@@ -510,12 +454,65 @@ function help() {
 	document.getElementById('esh').innerHTML += op + "<br>Objects:&nbsp;0-9 & qwertyuiop" + cl;
 }
 
+function generateGIF( element, renderFunction, duration = 1, fps = 30 ) {
+	const frame = duration * fps;
+	const canvas = document.createElement( 'canvas' );
+	canvas.width = element.width;
+	canvas.height = element.height;
+	console.log(canvas.width, canvas.height)
+	const context = canvas.getContext( '2d' );
+	const buffer = new Uint8Array( canvas.width * canvas.height * frame * 5 );
+	const pixels = new Uint8Array( canvas.width * canvas.height );
+	const writer = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
+	let current = 0;
+
+	return new Promise( async function addFrame( resolve ) {
+		renderFunction( current / frame );
+		context.drawImage( element, 0, 0 );
+		const data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
+		const palette = [];
+
+		for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
+			const r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
+			const g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
+			const b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
+			const color = r << 16 | g << 8 | b << 0;
+			const index = palette.indexOf( color );
+
+			if ( index === -1 ) {
+				pixels[ k ] = palette.length;
+				palette.push( color );
+			} else {
+				pixels[ k ] = index;
+			}
+		}
+
+		// Force palette to be power of 2
+		let powof2 = 1;
+		while ( powof2 < palette.length ) powof2 <<= 1;
+		palette.length = powof2;
+		console.log(palette.length)
+		const delay = 100 / fps; // Delay in hundredths of a sec (100 = 1s)
+		const options = { palette: new Uint32Array( palette ), delay: delay };
+		writer.addFrame( 0, 0, canvas.width, canvas.height, pixels, options );
+		current ++;
+		progress.value = current / frames;
+
+		if ( current < frame ) {
+			await setTimeout( addFrame, 0, resolve );
+		} else {
+			resolve( buffer.subarray( 0, writer.end() ) );
+		}
+
+	} );
+}
+
 document.body.style.overflow = 'hidden'
 button.addEventListener( 'click', async function () {
 	button.style.display = 'none';
 	progress.style.display = '';
 	// Generate
-	const buffer = await generateGIF( canvas, render, 4, 30 );
+	const buffer = await generateGIF( canvas, render, secs, hz );
 	button.style.display = '';
 	progress.style.display = 'none';
 	// Download
@@ -638,7 +635,7 @@ function onWindowResize() {
 	windowHalfY = window.innerHeight / 2
 	camera.aspect = window.innerWidth / window.innerHeight
 	camera.updateProjectionMatrix()
-	renderer.setSize( window.innerWidth, window.innerHeight )
+	renderer.setSize( wx, wy )
 }
 		</script>
 	</body>

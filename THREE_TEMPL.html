@@ -21,7 +21,7 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = false, stopped = false, pix = 5
+var frames = 0, zoom = 1, rotate = false, stopped = false, pix = 10
 
 // START
 init()
@@ -66,7 +66,7 @@ function makeGeometry() {
 		scene.remove( points )
 	}
 
-	numParticles = 5000
+	numParticles = 500
 	numP3 = numParticles * 3
 	var positions = new Array(numP3), colors = new Array(numP3)
 	var geometry = new THREE.BufferGeometry()
