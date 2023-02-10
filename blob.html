@@ -258,8 +258,9 @@ function dumpConfig() {
 	for (var q = 0; q <= pars; q++) {
 		str += 'v[' + q + ']=' + v[q] + ';' + 'dv[' + q + ']=' + dv[q] + ';' + 'w[' + q + ']=' + w[q] + ';' 
 	}
-	str += '\ndr=' + dr + ';rad=' + rad + ';ax=' + ax + ';dax=' + axs/ax + ';drad=' + rads/rad + ';rev=' + Math.abs(Math.round(rads/dr)) + ';'
-	str += '\ncolorx=' + colorx + ';colory=' + colory + ';' + 'obj=' + obj + ';tdx=' + tdx + ';mat=' + mat + ';zoom=' + zoom + ';nz=' + nz + ';lim=' + lim + ';clean=' + clean + ';rotate=' + rotate
+	str += '\ndr=' + dr + ';rad=' + rad + ';ax=' + ax + ';dax=axs/ax' + ';drad=rads/rad' + ';rev=' + Math.abs(Math.round(rads/dr)) + ';'
+	str += '\nobj=' + obj + ';tdx=' + tdx + ';mat=' + mat + ';zoom=' + zoom + ';nz=' + nz + ';lim=' + lim + ';clean=' + clean + ';rotate=' + rotate
+	str += ';rx=' + points.rotation.x + ';ry=' + points.rotation.y + ';rz=' + points.rotation.z
 	console.log(str)
 }
 

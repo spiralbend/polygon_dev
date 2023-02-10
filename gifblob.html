@@ -10,8 +10,13 @@
 	<div id="esh">&nbsp;</div>
 	<div id="hud">initializing field state...<br></div>
 	<canvas id="canvas"></canvas><br/><br/>
-	<button id="button">generate .gif</button>
+	<button id="button">Generate .GIF</button>
 	<progress id="progress" value="0" max="1" style="display:none"></progress>
+	<style>
+		body {
+			text-align: center;
+		}
+	</style>
 <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
 	{
@@ -28,17 +33,16 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 const canvas = document.getElementById( 'canvas' );
 const button = document.getElementById( 'button' );
 const progress = document.getElementById( 'progress' );
-//canvas.width = 128; canvas.height = 128
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, uvs, windowHalfX, windowHalfY
 const objects = Array.from(Array(3),() => new Array(3))
 
-var obj = 6, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 1, tex = [], noise = [], dn = [], uvs = []
+var obj = 13, stat = 1, dt = 0.005, dr = 0.0025, tdx = 0, mat = 0, tex = [], noise = [], dn = [], uvs = []
 var rotate = true, stopped = false, clean = true, dorando = false, lim = true, replay = false, max = 350
 var grain = 5000, pix = 1, edge = 6, zoom = 1, radi = 1, dc = 0.15, nz = 0, time = 0, wait = 0, frames = 0, pars = 8
-var ax = 300, rad = 400, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr), rx = 0, ry = 0, rz = 0
-var secs = 15, hz = 30, wx = 600, wy = 500
+var ax = 300, rad = 400, axs = PI, rads = 2*PI, dax = axs/ax, drad = rads/rad, rev = Math.round(rads/dr), rx = -PI/4, ry = 0, rz = 0
+var secs = 5, hz = 30, wx = 600, wy = 500
 
 var numColors = 1024, colorspeed = 0.25
 var palet = Array.from(Array(3),() => new Array(numColors)), argb = new Array(3), drgb = new Array(3)
@@ -58,10 +62,11 @@ function setup() {
 		}
 		dax = axs/ax; drad = rads/rad; rev = Math.round(rads/dr)
 	} else {
+		console.log("replaying...\n");
 //START
-v[0]=-2.568211393135954;dv[0]=-0.0013220368894716905;w[0]=3.583910320491413;v[1]=0.10712265991020126;dv[1]=0.0025796208105441976;w[1]=-9.442632686060888;v[2]=5.921021838266558;dv[2]=0.001285570622122134;w[2]=-4.54995741758272;v[3]=2.944650335742949;dv[3]=-0.0014336471577681238;w[3]=2.6286135695991386;v[4]=-2.5144637675669985;dv[4]=0.002640213658236132;w[4]=-8.992349130043767;v[5]=0.30981368848154933;dv[5]=-0.00174071918051369;w[5]=9.373119372986636;v[6]=0.8053521550885563;dv[6]=-0.001383444243322355;w[6]=9.290146254457913;v[7]=-0.8787383065474315;dv[7]=0.00020714271638280266;w[7]=-0.14698507222581642;v[8]=0.7059470419207459;dv[8]=-0.0007678134703363509;w[8]=9.306846951844554;
-dr=0.0025;rad=4000;ax=3000;dax=0.010471975511965976;drad=0.015707963267948967;rev=2513;
-obj=6;tdx=0;mat=1;zoom=1;nz=0;lim=true;clean=true;rotate=true;rx=1.595392207786992;ry=-0.4462372469785072;rz=-0.8532613292607902
+v[0]=-0.09325866476060579;dv[0]=0.0024689801568248933;w[0]=-3.126048916889377;v[1]=2.24120948312607;dv[1]=-0.002476769437231748;w[1]=2.7587757922898897;v[2]=3.7226393913157163;dv[2]=-0.001362624122390703;w[2]=-3.8108961457940467;v[3]=2.1285592886691442;dv[3]=0.0015679811398579594;w[3]=6.645842538955459;v[4]=-4.926227942628682;dv[4]=-0.0018225004009109686;w[4]=-0.9632268978549059;v[5]=4.334865756554867;dv[5]=-0.002395990811253336;w[5]=0.8073791632078763;v[6]=1.6832934020005883;dv[6]=0.0033057791637398836;w[6]=0.2843659281042701;v[7]=4.174758536334629;dv[7]=-0.002177798772907112;w[7]=0.7695235197877615;v[8]=-4.217875069715153;dv[8]=0.0003045701564220365;w[8]=3.9211704106391516;
+dr=0.0025;rad=400;ax=300;dax=axs/ax;drad=rads/rad;rev=2513;
+obj=13;tdx=0;mat=1;zoom=1;nz=0;lim=true;clean=true;rotate=true;rx=2.1465066805055333;ry=0.030788139542730776;rz=-0.9379169392506622
 //END
 	}	
 }
@@ -92,11 +97,7 @@ function render() {
 			let X = R * Math.sin(PHI) * Math.cos(THETA) + Math.sin(noise[idx  ]) * nz
 			let Y = R * Math.sin(PHI) * Math.sin(THETA) + Math.sin(noise[idx+1]) * nz
 			let Z = R * Math.cos(PHI)                   + Math.sin(noise[idx+2]) * nz
-			// let cx = Math.floor(Math.round(Math.abs(10*X + ix)) % colorx)
-			// let cy = Math.floor(Math.round(Math.abs(10*Y + iy)) % colory)
 			let Z0 = Math.floor(Math.abs(R)) % numColors
-			// if ( isNaN(cx) ) { cx = 0 }
-			// if ( isNaN(cy) ) { cy = 0 }
 
 			positions[idx]   = zoom * X
 			positions[idx+1] = zoom * Y
@@ -108,8 +109,7 @@ function render() {
 			THETA += drad
 
 		}
-		// ix = (ix + 0.05)
-		// iy = (iy + 0.02)
+
 		PHI += dax
 	} // make 0,0,-R
 	positions[idx]   = 0
@@ -146,9 +146,6 @@ function render() {
 function makeGeometry() {
 
 	if (frames > 0) {
-		// var x = points.rotation.x
-		// var y = points.rotation.y
-		// var z = points.rotation.z
 		scene.remove( points )
 	}
 
@@ -175,14 +172,9 @@ function makeGeometry() {
 
 	points = new THREE.Mesh( geometry, material )
 	scene.add( points )
-
-	if (frames > 0) { 
-	
-		points.rotateX(rx)
-		points.rotateY(ry)
-		points.rotateZ(rz)
-	
-	}
+	points.rotateX(rx)
+	points.rotateY(ry)
+	points.rotateZ(rz)
 
 	var indices = []
 	for (let k = 1; k <= rad; k++) {
@@ -262,7 +254,6 @@ function init() {
 	renderer = new THREE.WebGLRenderer( { antialias: true, canvas: canvas } )
 	renderer.setPixelRatio( window.devicePixelRatio )
 	renderer.setSize( wx, wy );
-	//renderer.setSize( window.innerWidth, window.innerHeight )
 	container.appendChild( renderer.domElement )
 
 	controls = new OrbitControls( camera, renderer.domElement )
@@ -284,7 +275,7 @@ function dumpConfig() {
 	for (var q = 0; q <= pars; q++) {
 		str += 'v[' + q + ']=' + v[q] + ';' + 'dv[' + q + ']=' + dv[q] + ';' + 'w[' + q + ']=' + w[q] + ';' 
 	}
-	str += '\ndr=' + dr + ';rad=' + rad + ';ax=' + ax + ';dax=' + axs/ax + ';drad=' + rads/rad + ';rev=' + Math.abs(Math.round(rads/dr)) + ';'
+	str += '\ndr=' + dr + ';rad=' + rad + ';ax=' + ax + ';dax=axs/ax' + ';drad=rads/rad' + ';rev=' + Math.abs(Math.round(rads/dr)) + ';'
 	str += '\nobj=' + obj + ';tdx=' + tdx + ';mat=' + mat + ';zoom=' + zoom + ';nz=' + nz + ';lim=' + lim + ';clean=' + clean + ';rotate=' + rotate
 	str += ';rx=' + points.rotation.x + ';ry=' + points.rotation.y + ';rz=' + points.rotation.z
 	console.log(str)
@@ -333,7 +324,7 @@ function reverseTime() {
 function colormap() {
 	for (var i = 0; i < 3; i++) {
 		argb[i] = Math.random()
-		drgb[i] = Math.random() * 0.0051 * flip()
+		drgb[i] = Math.random() * 0.0005 * flip()
 	}
 	for (var i = 0; i <= numColors; i++) {
 
@@ -457,9 +448,10 @@ function help() {
 function generateGIF( element, renderFunction, duration = 1, fps = 30 ) {
 	const frame = duration * fps;
 	const canvas = document.createElement( 'canvas' );
+	canvas.getContext('2d', { willReadFrequently: true } );
 	canvas.width = element.width;
 	canvas.height = element.height;
-	console.log(canvas.width, canvas.height)
+	console.log("creating GIF\nw: " + canvas.width + ", h: " + canvas.height)
 	const context = canvas.getContext( '2d' );
 	const buffer = new Uint8Array( canvas.width * canvas.height * frame * 5 );
 	const pixels = new Uint8Array( canvas.width * canvas.height );
@@ -491,7 +483,7 @@ function generateGIF( element, renderFunction, duration = 1, fps = 30 ) {
 		let powof2 = 1;
 		while ( powof2 < palette.length ) powof2 <<= 1;
 		palette.length = powof2;
-		console.log(palette.length)
+		console.log( palette.length )
 		const delay = 100 / fps; // Delay in hundredths of a sec (100 = 1s)
 		const options = { palette: new Uint32Array( palette ), delay: delay };
 		writer.addFrame( 0, 0, canvas.width, canvas.height, pixels, options );
