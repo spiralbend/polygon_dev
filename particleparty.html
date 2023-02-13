@@ -6,7 +6,8 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link type="text/css" rel="stylesheet" href="min.css">
 </head>
-	<body bgcolor=black>
+<body bgcolor=black>
+	<div id="hud">initializing field state...</div>
 <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
 	{
@@ -17,19 +18,25 @@
 </script>
 <script type="x-shader/x-vertex" id="vertexshader">
 	attribute float scale;
+	attribute vec3 col;
+	varying vec3 vColor;
 	void main() {
+		vColor = col;
 		vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-		gl_PointSize = 3.0 * scale * ( 300.0 / - mvPosition.z );
+		gl_PointSize = 3.5 * scale * ( 300.0 / - mvPosition.z );
 		gl_Position = projectionMatrix * mvPosition;
 	}
 </script>
 <script type="x-shader/x-fragment" id="fragmentshader">
 	uniform vec3 color;
 	uniform sampler2D pointTexture;
+	varying vec3 vColor;
 	void main() {
 		if ( length( gl_PointCoord - vec2( 0.5, 0.5 ) ) > 0.475 ) discard;
-		gl_FragColor = vec4( color, 1.0 );
-		gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );
+		/*gl_FragColor = vec4( color, 1.0 );
+		gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );*/
+		vec4 color = vec4( color * vColor, 1.0 ) * texture2D( pointTexture, gl_PointCoord );
+		gl_FragColor = color;
 	}
 </script>
 <script type="module">
@@ -38,8 +45,9 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = false, stopped = false, pix = 5, dr = 0.0025, rev = 2 * PI / dr, time = 0, dt = 0.005
-var numParticles = 300, numP3 = numParticles * 3, boxX = 600, boxY = 600, boxZ = 600, pos = [], vel = [], acc = [], mss = []
+var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
+var pix = 5, dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.005
+var numParticles = 350, numP3 = numParticles * 3, boxX = 600, boxY = 600, boxZ = 600, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -49,21 +57,17 @@ function render() {
 
 	camera.lookAt( scene.position )
 	positions = points.geometry.attributes.position.array
-	colors = points.geometry.attributes.color.array
+	colors = points.geometry.attributes.col.array
 	scales = points.geometry.attributes.scale.array
-
-	//if (frames % 100 == 0) {  }
-	//scales[0] = 10
-
 	
 	if (rotate) { 
 		points.rotateX(dr)
-		if ((frames % rev) < 400) { points.rotateY(dr/2); points.rotateZ(dr/3) }
+		if ((frames % rev) < 300) { points.rotateY(dr/2); points.rotateZ(dr/3) }
 	}
 
-	pos[0].x = 1000 * Math.sin(time)
-	pos[0].y = 500  * Math.sin(time) * Math.cos(time)
-	pos[0].z = 250  * Math.cos(1.2*time)
+	pos[0].x = 1200 * Math.sin(time)
+	pos[0].y = 600  * Math.sin(time) * Math.cos(time)
+	pos[0].z = 300  * Math.cos(1.2*time)
 
 	for (let k=1; k<numParticles; k++) {
 		let v = new THREE.Vector3().copy(pos[k])
@@ -77,39 +81,42 @@ function render() {
 	for ( let j = 0; j < numParticles; j++) {
 		
 		pos[j].add(vel[j])
-		let X = pos[j].x
-		let Y = pos[j].y
-		let Z = pos[j].z
-		let limx = boxX, limy = boxY, limz = boxZ
 
-		 if (j != 0) {
-			for (let k=1; k<numParticles; k++) {
-				if (k == j) { continue }
-				let v = new THREE.Vector3().copy(pos[k])
-				let d = Math.pow(mss[j]*v.distanceTo(pos[j]), -1.9)
-				v.sub(pos[j]).multiplyScalar(d)
-				vel[j].add(v)
-			}
-			// if (X >  limx) { X =  limx; vel[j].x *= -1 }
-			// if (X < -limx) { X = -limx; vel[j].x *= -1 }
-			// if (Y >  limy) { Y =  limy; vel[j].y *= -1 }
-			// if (Y < -limy) { Y = -limy; vel[j].y *= -1 }
-			// if (Z >  limz) { Z =  limz; vel[j].z *= -1 }
-			// if (Z < -limz) { Z = -limz; vel[j].z *= -1 }
-		}
+		//  repulsion loop (doesn't seem to do much)
+		//  if (j != 0) {
+		// 	for (let k=1; k<numParticles; k++) {
+		// 		if (k == j) { continue }
+		// 		let v = new THREE.Vector3().copy(pos[k])
+		// 		let d = Math.pow(mss[j]*v.distanceTo(pos[j]), -1.9)
+		// 		v.sub(pos[j]).multiplyScalar(d)
+		// 		vel[j].add(v)
+		// 	}
+		// }
 
-		positions[idx]   = X
-		positions[idx+1] = Y
-		positions[idx+2] = Z
-		scales[j] = mss[j]
-	
+		positions[idx]   = pos[j].x
+		positions[idx+1] = pos[j].y
+		positions[idx+2] = pos[j].z
+
+		let mass = mss[j]
+		scales[j] = mass
+
+		colors[idx]   = 1 - mass / 75
+		if (frames == 0) {colors[idx+1] = 0.2 + Math.random() * 0.2}
+		colors[idx+2] = mass / 75
+
 		idx += 3
 	}
 
+	colors[0] = 0.98
+	colors[1] = 0.72
+	colors[2] = 0.07
+
 	points.geometry.attributes.position.needsUpdate = true
-	points.geometry.attributes.color.needsUpdate = true
+	points.geometry.attributes.col.needsUpdate = true
 	points.geometry.attributes.scale.needsUpdate = true
+
 	renderer.render( scene, camera )
+	label()
 	frames++
 
 }
@@ -123,43 +130,34 @@ function makeGeometry() {
 		scene.remove( points )
 	}
 
-	var positions = new Array(numP3), colors = new Array(numP3), scales = new Float32Array( numParticles )
+	var positions = new Array(numP3), colors = new Array(numP3), scales = new Float32Array(numParticles)
 	var geometry = new THREE.BufferGeometry()
 
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) )
-	geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) )
+	geometry.setAttribute( 'col', new THREE.Float32BufferAttribute( colors, 3 ) )
 	geometry.setAttribute( 'scale', new THREE.BufferAttribute( scales, 1 ) )
 
-	//const sprite = new THREE.TextureLoader().load( './files/circle.png' )
-	//var material = new THREE.ShaderMaterial( { vertexShader: document.getElementById( 'vertexshader' ).textContent, vertexColors: false, alphaTest: 0.2, transparent: true } )
 	const material = new THREE.ShaderMaterial( {
-
 		uniforms: {
 			color: { value: new THREE.Color( 0xffffff ) },
 			pointTexture: { value: new THREE.TextureLoader().load( './files/ball.png' ) }
 		},
 		vertexShader: document.getElementById( 'vertexshader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-		vertexColors: true
-
+		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 	} );
+
 	points = new THREE.Points( geometry, material )
 	scene.add( points )
 
 	pos.push(new THREE.Vector3(0,0,0))
 	vel.push(new THREE.Vector3(0.3,0.4,0.5))
-	mss.push(150)
+	mss.push(250)
 
 	for (let i=1; i<numParticles; i++) {
 		pos.push( new THREE.Vector3( Math.random()*boxX*flip()/5, Math.random()*boxY*flip()/5, Math.random()*boxZ*flip()/5) )
 		vel.push( new THREE.Vector3( Math.random() * flip(), Math.random() * flip(), Math.random() * flip() ) )
 		mss.push( Math.random()*50 + 25)
 	}
-
-	// console.log(pos[0], pos[1])
-	// let v = new THREE.Vector3().copy(pos[0])
-	// v.sub(pos[1]).divideScalar(100)
-	// console.log(pos[0], pos[1], v)
 
 	if (frames > 0) { 
 		points.rotateX(x)
@@ -181,7 +179,7 @@ function init() {
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
-	camera.position.set( 0, 0, 5000 )
+	camera.position.set( 0, 0, 6000 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
@@ -215,13 +213,26 @@ function flip() {
 	}
 }
 
+function label() {
+	var bp = "<font color=#00FF00 face=Courier size=5>"
+	document.getElementById('hud').innerHTML = ""
+	if (clean) return -1
+	document.getElementById('hud').innerHTML += bp + "object: starbundle</font><br>"
+	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "frames: " + frames + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;&nbsp;&nbsp;" + dt.toFixed(5) + "</font><br>";
+}
+
 document.body.style.overflow = 'hidden'
 document.onkeydown = function(e) {
 	switch (e.keyCode) { 
 		case 8: e.preventDefault(); init(); break //backspace
+		case 76: clean = !clean; break //l label on/off
 		case 187: zoom *= 1.05; break //+
 		case 189: zoom /= 1.05; break //-
-		case 220: zoom = 1; camera.position.set( 0, 0, 1000 ); break //\
+		case 220: zoom = 1; camera.position.set( 0, 0, 5000 ); break //\
 		case 27: //ESC stop
 			if(stopped) {
 				animate()
