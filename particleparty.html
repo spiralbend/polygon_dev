@@ -19,7 +19,7 @@
 	attribute float scale;
 	void main() {
 		vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-		gl_PointSize = scale * ( 300.0 / - mvPosition.z );
+		gl_PointSize = 3.0 * scale * ( 300.0 / - mvPosition.z );
 		gl_Position = projectionMatrix * mvPosition;
 	}
 </script>
@@ -38,8 +38,8 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = false, stopped = false, pix = 5, dr = 0.0025, rev = 2 * PI / dr
-var numParticles = 200, numP3 = numParticles * 3, boxX = 1000, boxY = 1000, boxZ = 1000, pos = [], vel = [], acc = [], mss = []
+var frames = 0, zoom = 1, rotate = false, stopped = false, pix = 5, dr = 0.0025, rev = 2 * PI / dr, time = 0, dt = 0.005
+var numParticles = 300, numP3 = numParticles * 3, boxX = 600, boxY = 600, boxZ = 600, pos = [], vel = [], acc = [], mss = []
 
 // START
 init()
@@ -61,67 +61,56 @@ function render() {
 		if ((frames % rev) < 400) { points.rotateY(dr/2); points.rotateZ(dr/3) }
 	}
 
+	pos[0].x = 1000 * Math.sin(time)
+	pos[0].y = 500  * Math.sin(time) * Math.cos(time)
+	pos[0].z = 250  * Math.cos(1.2*time)
+
+	for (let k=1; k<numParticles; k++) {
+		let v = new THREE.Vector3().copy(pos[k])
+		v.sub(pos[0]).divideScalar(-50*(mss[k])**1.5)
+		vel[k].add(v)
+	}
+	
+	time += dt * (1.2 + Math.sin(time))/2
 	let idx = 0
 
 	for ( let j = 0; j < numParticles; j++) {
-
+		
 		pos[j].add(vel[j])
-
 		let X = pos[j].x
 		let Y = pos[j].y
 		let Z = pos[j].z
 		let limx = boxX, limy = boxY, limz = boxZ
-		if (j == 0) {
+
+		 if (j != 0) {
 			for (let k=1; k<numParticles; k++) {
+				if (k == j) { continue }
 				let v = new THREE.Vector3().copy(pos[k])
-				v.sub(pos[j]).divideScalar(-500*(mss[k])**1.5)
-				vel[k].add(v)
-				limx = 100; limy = 100; limz = 100
+				let d = Math.pow(mss[j]*v.distanceTo(pos[j]), -1.9)
+				v.sub(pos[j]).multiplyScalar(d)
+				vel[j].add(v)
 			}
+			// if (X >  limx) { X =  limx; vel[j].x *= -1 }
+			// if (X < -limx) { X = -limx; vel[j].x *= -1 }
+			// if (Y >  limy) { Y =  limy; vel[j].y *= -1 }
+			// if (Y < -limy) { Y = -limy; vel[j].y *= -1 }
+			// if (Z >  limz) { Z =  limz; vel[j].z *= -1 }
+			// if (Z < -limz) { Z = -limz; vel[j].z *= -1 }
 		}
-		if (X >  limx) { X =  limx; vel[j].x *= -1 }
-		if (X < -limx) { X = -limx; vel[j].x *= -1 }
-		if (Y >  limy) { Y =  limy; vel[j].y *= -1 }
-		if (Y < -limy) { Y = -limy; vel[j].y *= -1 }
-		if (Z >  limz) { Z =  limz; vel[j].z *= -1 }
-		if (Z < -limz) { Z = -limz; vel[j].z *= -1 }
-		// if (Math.abs(Y) > boxX) { Y = boxX; vel[j].y *= -1 }
-		// if (Math.abs(Z) > boxX) { Z = boxX; vel[j].z *= -1 }
-		//scales[j] = Math.floor(scales[j])
 
 		positions[idx]   = X
 		positions[idx+1] = Y
 		positions[idx+2] = Z
 		scales[j] = mss[j]
-
-		// for (let k=0; k<numParticles; k++) {
-		// 	if (k == j) { continue }
-		// 	let d = pos[j].distanceTo(pos[k])
-		// 	let v = pos[k].sub(pos[j])
-		// 	//v.divideScalar(10000)
-		// 	//v.multiplyScalar( d )
-		// 	//vel[j].add( v )
-		// }
-
-		//vel[j].add( new THREE.Vector3( Math.random() * flip()/5, Math.random() * flip()/5, Math.random() * flip()/5) )
 	
 		idx += 3
-
 	}
-	colors[0] = 1; colors[1] = 0; colors[2] = 0
+
 	points.geometry.attributes.position.needsUpdate = true
 	points.geometry.attributes.color.needsUpdate = true
 	points.geometry.attributes.scale.needsUpdate = true
-
 	renderer.render( scene, camera )
 	frames++
-
-	// if (frames % 300 == 0) {
-	// 	pos.pop()
-	// 	pos.unshift( new THREE.Vector3( Math.random()*boxX*flip(), Math.random()*boxX*flip(), Math.random()*boxX*flip() ) )
-	// 	mss.pop()
-	// 	mss.unshift( Math.random()*50 )
-	// }
 
 }
 
@@ -158,12 +147,12 @@ function makeGeometry() {
 	scene.add( points )
 
 	pos.push(new THREE.Vector3(0,0,0))
-	vel.push(new THREE.Vector3(0.1,0.1,0.1))
+	vel.push(new THREE.Vector3(0.3,0.4,0.5))
 	mss.push(150)
 
 	for (let i=1; i<numParticles; i++) {
-		pos.push( new THREE.Vector3( Math.random()*boxX*flip(), Math.random()*boxY*flip(), Math.random()*boxZ*flip() ) )
-		vel.push( new THREE.Vector3( Math.random() * flip()/25, Math.random() * flip()/25, Math.random() * flip()/25 ) )
+		pos.push( new THREE.Vector3( Math.random()*boxX*flip()/5, Math.random()*boxY*flip()/5, Math.random()*boxZ*flip()/5) )
+		vel.push( new THREE.Vector3( Math.random() * flip(), Math.random() * flip(), Math.random() * flip() ) )
 		mss.push( Math.random()*50 + 25)
 	}
 
@@ -191,8 +180,8 @@ function init() {
 
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
-	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 5000 )
-	camera.position.set( 0, 0, 1000 )
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
+	camera.position.set( 0, 0, 5000 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
