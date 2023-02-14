@@ -46,8 +46,8 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
 var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
-var pix = 5, dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.005
-var numParticles = 500, numP3 = numParticles * 3, boxX = 600, boxY = 600, boxZ = 600, pos = [], vel = [], mss = []
+var pix = 5, dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.01//075
+var numParticles = 5000, numP3 = numParticles * 3, box = numParticles/100, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -81,17 +81,6 @@ function render() {
 	for ( let j = 0; j < numParticles; j++) {
 		
 		pos[j].add(vel[j])
-
-		//  repulsion loop (doesn't seem to do much)
-		//  if (j != 0) {
-		// 	for (let k=1; k<numParticles; k++) {
-		// 		if (k == j) { continue }
-		// 		let v = new THREE.Vector3().copy(pos[k])
-		// 		let d = Math.pow(mss[j]*v.distanceTo(pos[j]), -1.9)
-		// 		v.sub(pos[j]).multiplyScalar(d)
-		// 		vel[j].add(v)
-		// 	}
-		// }
 
 		positions[idx]   = pos[j].x
 		positions[idx+1] = pos[j].y
@@ -144,7 +133,7 @@ function makeGeometry() {
 		},
 		vertexShader: document.getElementById( 'vertexshader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
-	} );
+	} )
 
 	points = new THREE.Points( geometry, material )
 	scene.add( points )
@@ -154,8 +143,17 @@ function makeGeometry() {
 	mss.push(500)
 
 	for (let i=1; i<numParticles; i++) {
-		pos.push( new THREE.Vector3( Math.random()*boxX*flip()/5, Math.random()*boxY*flip()/5, Math.random()*boxZ*flip()/5) )
-		vel.push( new THREE.Vector3( Math.random() * flip(), Math.random() * flip(), Math.random() * flip() ) )
+
+		pos.push( new THREE.Vector3(
+            Math.random() * box * flip() / 5,
+            Math.random() * box * flip() / 5,
+            Math.random() * box * flip() / 5 ) )
+
+		vel.push( new THREE.Vector3(
+            Math.random() * flip(),
+            Math.random() * flip(),
+            Math.random() * flip() ) )
+
 		mss.push( Math.random()*50 + 25)
 	}
 
@@ -178,8 +176,8 @@ function init() {
 
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
-	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
-	camera.position.set( 0, 0, 6000 )
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 100000 )
+	camera.position.set( 0, 0, 8000 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
