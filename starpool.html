@@ -46,7 +46,7 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
 var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
-var pix = 5, dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.01//075
+var dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.01//075
 var numParticles = 5000, numP3 = numParticles * 3, box = numParticles/100, pos = [], vel = [], mss = []
 
 // START
@@ -89,7 +89,7 @@ function render() {
 		let mass = mss[j]
 		scales[j] = mass
 
-		colors[idx]   = (1 - mass/75)
+		colors[idx]   = (1 - mass / 75)
 		colors[idx+1] = 0.65
 		colors[idx+2] = (mass / 75) 
 
@@ -112,13 +112,6 @@ function render() {
 
 function makeGeometry() {
 
-	if (frames > 0) {
-		var x = points.rotation.x
-		var y = points.rotation.y
-		var z = points.rotation.z
-		scene.remove( points )
-	}
-
 	var positions = new Array(numP3), colors = new Array(numP3), scales = new Float32Array(numParticles)
 	var geometry = new THREE.BufferGeometry()
 
@@ -138,34 +131,28 @@ function makeGeometry() {
 	points = new THREE.Points( geometry, material )
 	scene.add( points )
 
-	pos.push(new THREE.Vector3(0,0,0))
-	vel.push(new THREE.Vector3(0.3,0.4,0.5))
-	mss.push(500)
+	pos.push( new THREE.Vector3(0,0,0) )
+	vel.push( new THREE.Vector3(0,0,0) )
+	mss.push( 500 )
 
 	for (let i=1; i<numParticles; i++) {
 
 		pos.push( new THREE.Vector3(
-            Math.random() * box * flip() / 5,
-            Math.random() * box * flip() / 5,
-            Math.random() * box * flip() / 5 ) )
+			Math.random() * box * flip() / 3,
+			Math.random() * box * flip() / 5,
+			Math.random() * box * flip() / 7 ) )
 
 		vel.push( new THREE.Vector3(
-            Math.random() * flip(),
-            Math.random() * flip(),
-            Math.random() * flip() ) )
+			Math.random() * flip(),
+			Math.random() * flip(),
+			Math.random() * flip() ) )
 
-		mss.push( Math.random()*50 + 25)
+		mss.push( Math.random() * 50 + 25 )
 	}
 
-	if (frames > 0) { 
-		points.rotateX(x)
-		points.rotateY(y)
-		points.rotateZ(z)
-	}
-
-	if (frames == 0) {
-		console.log("pts", numParticles, "\nxyz", numP3, "\ncam", camera.position.x.toFixed(0), camera.position.y.toFixed(0), camera.position.z.toFixed(0) )
-	}
+	console.log("pts", numParticles, 
+				"\nxyz", numP3,
+				"\ncam", camera.position.x.toFixed(0), camera.position.y.toFixed(0), camera.position.z.toFixed(0) )
 
 }
 
@@ -183,8 +170,8 @@ function init() {
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
 	renderer.setPixelRatio( window.devicePixelRatio )
 	renderer.setSize( window.innerWidth, window.innerHeight )
-	container.appendChild( renderer.domElement )
 
+	container.appendChild( renderer.domElement )
 	controls = new OrbitControls( camera, renderer.domElement )
 	controls.enableDamping = true
 	controls.dampingFactor = 0.05
@@ -226,7 +213,7 @@ function label() {
 document.body.style.overflow = 'hidden'
 document.onkeydown = function(e) {
 	switch (e.keyCode) { 
-		case 8: e.preventDefault(); init(); break //backspace
+		//case 8: e.preventDefault(); init(); break //backspace
 		case 76: clean = !clean; break //l label on/off
 		case 187: zoom *= 1.05; break //+
 		case 189: zoom /= 1.05; break //-
