@@ -100,9 +100,9 @@ function render() {
 		let mass = mss[j]
 		scales[j] = mass
 
-		colors[idx]   = (1 - mass/75) //* 0.5 + 0.5
-		colors[idx+1] = 0.8
-		colors[idx+2] = (mass / 75) //* 0.5 + 0.5
+		colors[idx]   = (1 - mass/75)
+		colors[idx+1] = 0.65
+		colors[idx+2] = (mass / 75) 
 
 		idx += 3
 	}
@@ -221,7 +221,7 @@ function label() {
 	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>"
-	document.getElementById('hud').innerHTML += bp + "frames: " + frames + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "frames: " + (frames/10).toFixed(0) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;&nbsp;&nbsp;" + dt.toFixed(5) + "</font><br>";
 }
 
