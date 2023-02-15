@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>starpool</title>
+	<title>Particle Party</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link type="text/css" rel="stylesheet" href="min.css">
@@ -43,11 +43,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
+const clock = new THREE.Clock()
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
-var pix = 5, dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.005
-var numParticles = 500, numP3 = numParticles * 3, boxX = 600, boxY = 600, boxZ = 600, pos = [], vel = [], mss = []
+var frames = 0, zoom = 1, rotate = false, stopped = false, clean = true
+var dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0.5
+var numParticles = 50, numP3 = numParticles * 3, box = 100, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -55,6 +56,7 @@ animate()
 
 function render() {
 
+	const delta = clock.getDelta()/100
 	camera.lookAt( scene.position )
 	positions = points.geometry.attributes.position.array
 	colors = points.geometry.attributes.col.array
@@ -64,53 +66,43 @@ function render() {
 		points.rotateX(dr)
 		if ((frames % rev) < 300) { points.rotateY(dr/2); points.rotateZ(dr/3) }
 	}
-
-	pos[0].x = 1200 * Math.sin(time)
-	pos[0].y = 600  * Math.sin(time) * Math.cos(time)
-	pos[0].z = 300  * Math.cos(1.2*time)
-
-	for (let k=1; k<numParticles; k++) {
-		let v = new THREE.Vector3().copy(pos[k])
-		v.sub(pos[0]).divideScalar(-50*(mss[k])**1.5)
-		vel[k].add(v)
-	}
 	
-	time += dt * (1.2 + Math.sin(time))/2
-	let idx = 0
-
 	for ( let j = 0; j < numParticles; j++) {
-		
-		pos[j].add(vel[j])
+		for (let k = j + 1; k < numParticles; k++) {
 
-		//  repulsion loop (doesn't seem to do much)
-		//  if (j != 0) {
-		// 	for (let k=1; k<numParticles; k++) {
-		// 		if (k == j) { continue }
-		// 		let v = new THREE.Vector3().copy(pos[k])
-		// 		let d = Math.pow(mss[j]*v.distanceTo(pos[j]), -1.9)
-		// 		v.sub(pos[j]).multiplyScalar(d)
-		// 		vel[j].add(v)
-		// 	}
-		// }
+			let u = new THREE.Vector3().copy(pos[j])
+			let v = new THREE.Vector3().copy(pos[k])
+			let d = u.distanceTo(v)
+			let f = Math.pow( d-500, 3 ) / ( mss[k] * 10**8 )
 
-		positions[idx]   = pos[j].x
-		positions[idx+1] = pos[j].y
-		positions[idx+2] = pos[j].z
+			u.sub(pos[k]).multiplyScalar(delta * f)
+			v.sub(pos[j]).multiplyScalar(delta * f)
 
-		let mass = mss[j]
-		scales[j] = mass
+			if (j != 0) vel[j].add(v)
+			vel[k].add(u)
 
-		colors[idx]   = (1 - mass/75) //* 0.5 + 0.5
+		}
+	}
+
+	let idx = 0
+	for ( let i = 0; i < numParticles; i++) {
+		pos[i].add(vel[i])
+
+		positions[idx]   = pos[i].x
+		positions[idx+1] = pos[i].y
+		positions[idx+2] = pos[i].z
+
+		let mass = mss[i]
+		scales[i] = mass
+
+		colors[idx]   = (1 - mass / 50)
 		colors[idx+1] = 0.8
-		colors[idx+2] = (mass / 75) //* 0.5 + 0.5
+		colors[idx+2] = (mass / 50)
 
 		idx += 3
 	}
 
-	colors[0] = 0.98
-	colors[1] = 0.72
-	colors[2] = 0.07
-
+	scales[0] = 0
 	points.geometry.attributes.position.needsUpdate = true
 	points.geometry.attributes.col.needsUpdate = true
 	points.geometry.attributes.scale.needsUpdate = true
@@ -122,13 +114,6 @@ function render() {
 }
 
 function makeGeometry() {
-
-	if (frames > 0) {
-		var x = points.rotation.x
-		var y = points.rotation.y
-		var z = points.rotation.z
-		scene.remove( points )
-	}
 
 	var positions = new Array(numP3), colors = new Array(numP3), scales = new Float32Array(numParticles)
 	var geometry = new THREE.BufferGeometry()
@@ -148,26 +133,28 @@ function makeGeometry() {
 
 	points = new THREE.Points( geometry, material )
 	scene.add( points )
-
-	pos.push(new THREE.Vector3(0,0,0))
-	vel.push(new THREE.Vector3(0.3,0.4,0.5))
-	mss.push(500)
+	
+	pos[0] = new THREE.Vector3 (0,0,0)
+	vel[0] = new THREE.Vector3 (0,0,0)
+	mss[0] = 200
 
 	for (let i=1; i<numParticles; i++) {
-		pos.push( new THREE.Vector3( Math.random()*boxX*flip()/5, Math.random()*boxY*flip()/5, Math.random()*boxZ*flip()/5) )
-		vel.push( new THREE.Vector3( Math.random() * flip(), Math.random() * flip(), Math.random() * flip() ) )
-		mss.push( Math.random()*50 + 25)
+		pos.push( new THREE.Vector3( 
+			Math.random() * box * flip(),
+			Math.random() * box * flip(),
+			Math.random() * box * flip() ) )
+
+		vel.push( new THREE.Vector3(
+			Math.random() * flip() * nudge,
+			Math.random() * flip() * nudge,
+			Math.random() * flip() * nudge ) )
+
+		mss.push( Math.random()*25 + 25)
 	}
 
-	if (frames > 0) { 
-		points.rotateX(x)
-		points.rotateY(y)
-		points.rotateZ(z)
-	}
-
-	if (frames == 0) {
-		console.log("pts", numParticles, "\nxyz", numP3, "\ncam", camera.position.x.toFixed(0), camera.position.y.toFixed(0), camera.position.z.toFixed(0) )
-	}
+	console.log(  "pts", numParticles, 
+				"\nxyz", numP3,
+				"\ncam", camera.position.x.toFixed(0), camera.position.y.toFixed(0), camera.position.z.toFixed(0) )
 
 }
 
@@ -179,7 +166,7 @@ function init() {
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
-	camera.position.set( 0, 0, 6000 )
+	camera.position.set( 0, 0, 1800 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
@@ -217,7 +204,7 @@ function label() {
 	var bp = "<font color=#00FF00 face=Courier size=5>"
 	document.getElementById('hud').innerHTML = ""
 	if (clean) return -1
-	document.getElementById('hud').innerHTML += bp + "object: starpool</font><br>"
+	document.getElementById('hud').innerHTML += bp + "object: particle party</font><br>"
 	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>"
