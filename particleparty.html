@@ -46,9 +46,9 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 const clock = new THREE.Clock()
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = false, stopped = false, clean = true
-var dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0.5
-var numParticles = 50, numP3 = numParticles * 3, box = 100, pos = [], vel = [], mss = []
+var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
+var dr = 0.005, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0.5
+var numParticles = 800, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -64,7 +64,6 @@ function render() {
 	
 	if (rotate) { 
 		points.rotateX(dr)
-		if ((frames % rev) < 300) { points.rotateY(dr/2); points.rotateZ(dr/3) }
 	}
 	
 	for ( let j = 0; j < numParticles; j++) {
@@ -73,7 +72,7 @@ function render() {
 			let u = new THREE.Vector3().copy(pos[j])
 			let v = new THREE.Vector3().copy(pos[k])
 			let d = u.distanceTo(v)
-			let f = Math.pow( d-500, 3 ) / ( mss[k] * 10**8 )
+			let f = Math.pow( d-500, 3 ) / ( 10**10 )
 
 			u.sub(pos[k]).multiplyScalar(delta * f)
 			v.sub(pos[j]).multiplyScalar(delta * f)
@@ -95,9 +94,9 @@ function render() {
 		let mass = mss[i]
 		scales[i] = mass
 
-		colors[idx]   = (1 - mass / 50)
-		colors[idx+1] = 0.8
-		colors[idx+2] = (mass / 50)
+		colors[idx]   = (1 - mass / 25)
+		colors[idx+1] = 0.65
+		colors[idx+2] = (mass / 25)
 
 		idx += 3
 	}
@@ -149,7 +148,7 @@ function makeGeometry() {
 			Math.random() * flip() * nudge,
 			Math.random() * flip() * nudge ) )
 
-		mss.push( Math.random()*25 + 25)
+		mss.push( Math.random()*25 )
 	}
 
 	console.log(  "pts", numParticles, 
@@ -166,7 +165,7 @@ function init() {
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
-	camera.position.set( 0, 0, 1800 )
+	camera.position.set( 0, 0, 1000 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
