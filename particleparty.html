@@ -94,9 +94,9 @@ function render() {
 		let mass = mss[i]
 		scales[i] = mass
 
-		colors[idx]   = (1 - mass / 20)
-		colors[idx+1] = 0.65
-		colors[idx+2] = (mass / 20)
+		colors[idx]   = 1 - (mass - 10) / 15
+		colors[idx+1] = 0.45
+		colors[idx+2] = (mass - 10) / 15
 
 		idx += 3
 	}
@@ -148,7 +148,7 @@ function makeGeometry() {
 			Math.random() * flip() * nudge,
 			Math.random() * flip() * nudge ) )
 
-		mss.push( Math.random()*20 )
+		mss.push( Math.random() * 15 + 10)
 	}
 
 	console.log(  "pts", numParticles, 
