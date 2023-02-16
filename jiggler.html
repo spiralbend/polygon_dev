@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>starpool</title>
+	<title>jiggler</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link type="text/css" rel="stylesheet" href="min.css">
@@ -43,17 +43,20 @@
 import * as THREE from 'three';
 import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js';
 
+const clock = new THREE.Clock()
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
-var dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.01//075
-var numParticles = 10000, numP3 = numParticles * 3, box = numParticles/100, pos = [], vel = [], mss = []
+var frames = 0, zoom = 1, rotate = false, stopped = false, clean = true
+var dr = 0.0025, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0, radius = 300
+var numParticles = 1000, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
 
 // START
 init()
 animate()
 
 function render() {
+
+	const delta = clock.getDelta()/100
 
 	camera.lookAt( scene.position )
 	positions = points.geometry.attributes.position.array
@@ -62,43 +65,52 @@ function render() {
 	
 	if (rotate) { 
 		points.rotateX(dr)
-		if ((frames % rev) < 300) { points.rotateY(dr/2); points.rotateZ(dr/3) }
-	}
-
-	pos[0].x = 1200 * Math.sin(time)
-	pos[0].y = 600  * Math.sin(time) * Math.cos(time)
-	pos[0].z = 300  * Math.cos(1.2*time)
-
-	for (let k=1; k<numParticles; k++) {
-		let v = new THREE.Vector3().copy(pos[k])
-		v.sub(pos[0]).divideScalar(-50*(mss[k])**1.5)
-		vel[k].add(v)
 	}
 	
-	time += dt * (1.2 + Math.sin(time))/2
+	let j = 0
+	//for ( let j = 0; j < numParticles; j++) {
+		for (let k = j + 1; k < numParticles; k++) {
+
+			let u = new THREE.Vector3().copy(pos[j])
+			let v = new THREE.Vector3().copy(pos[k])
+			let d = u.distanceTo(v)
+			let f = Math.pow( d - radius, 3 ) / ( 10**4 )
+
+			u.sub(v).multiplyScalar(delta * f)
+			vel[k].add(u)
+
+			for (let m = k + 1; m < numParticles; m++) {
+				let w = new THREE.Vector3().copy(pos[m])
+				d = w.distanceTo(v)
+				w.sub(v).multiplyScalar( delta * mss[k] / (d*50) )
+				vel[m].add(w)
+			}
+
+		}
+	//}
+
 	let idx = 0
+	for ( let i = 0; i < numParticles; i++) {
+		pos[i].add(vel[i])
 
-	for ( let j = 0; j < numParticles; j++) {
-		
-		pos[j].add(vel[j])
+		positions[idx]   = pos[i].x
+		positions[idx+1] = pos[i].y
+		positions[idx+2] = pos[i].z
 
-		positions[idx]   = pos[j].x
-		positions[idx+1] = pos[j].y
-		positions[idx+2] = pos[j].z
+		let mass = mss[i]
+		scales[i] = mass
 
-		let mass = mss[j]
-		scales[j] = mass
-
-		colors[idx]   = 1 - (mass - 25) / 50
+		colors[idx]   = 1 - (mass - 10) / 15
 		colors[idx+1] = 0.45
-		colors[idx+2] = (mass - 25) / 50
+		colors[idx+2] = (mass - 10) / 15
 
 		idx += 3
 	}
 
-	colors[0] = 0.98
-	colors[1] = 0.72
-	colors[2] = 0.07
+	// positions[3] = 400
+	// positions[4] = 0
+	// positions[5] = 0
+	// scales[0] = 0
 
 	points.geometry.attributes.position.needsUpdate = true
 	points.geometry.attributes.col.needsUpdate = true
@@ -126,31 +138,37 @@ function makeGeometry() {
 		},
 		vertexShader: document.getElementById( 'vertexshader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
-	} )
+	} );
 
 	points = new THREE.Points( geometry, material )
 	scene.add( points )
-
-	pos.push( new THREE.Vector3(0,0,0) )
-	vel.push( new THREE.Vector3(0,0,0) )
-	mss.push( 500 )
+	
+	pos[0] = new THREE.Vector3 (0,0,0)
+	vel[0] = new THREE.Vector3 (0,0,0)
+	mss[0] = 50
 
 	for (let i=1; i<numParticles; i++) {
 
-		pos.push( new THREE.Vector3(
-			Math.random() * box * flip() / 3,
-			Math.random() * box * flip() / 5,
-			Math.random() * box * flip() / 7 ) )
+		let theta = Math.random() * PI
+		let phi   = Math.random() * PI * 2
+
+		pos.push( new THREE.Vector3( 
+			// Math.random() * 25 * flip() + radius * Math.cos(phi) * Math.sin(theta),
+			// Math.random() * 25 * flip() + radius * Math.sin(phi) * Math.sin(theta),
+			// Math.random() * 25 * flip() + radius * Math.cos(theta) ) )
+			radius * Math.cos(phi) * Math.sin(theta),
+			radius * Math.sin(phi) * Math.sin(theta),
+			radius * Math.cos(theta) ) )
 
 		vel.push( new THREE.Vector3(
-			Math.random() * flip(),
-			Math.random() * flip(),
-			Math.random() * flip() ) )
+			Math.random() * flip() * nudge,
+			Math.random() * flip() * nudge,
+			Math.random() * flip() * nudge ) )
 
-		mss.push( Math.random() * 50 + 25 )
+		mss.push( Math.random() * 15 + 10)
 	}
 
-	console.log("pts", numParticles, 
+	console.log(  "pts", numParticles, 
 				"\nxyz", numP3,
 				"\ncam", camera.position.x.toFixed(0), camera.position.y.toFixed(0), camera.position.z.toFixed(0) )
 
@@ -163,15 +181,15 @@ function init() {
 
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
-	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 100000 )
-	camera.position.set( 0, 0, 8000 )
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
+	camera.position.set( 0, 0, 900 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
 	renderer.setPixelRatio( window.devicePixelRatio )
 	renderer.setSize( window.innerWidth, window.innerHeight )
-
 	container.appendChild( renderer.domElement )
+
 	controls = new OrbitControls( camera, renderer.domElement )
 	controls.enableDamping = true
 	controls.dampingFactor = 0.05
@@ -202,18 +220,18 @@ function label() {
 	var bp = "<font color=#00FF00 face=Courier size=5>"
 	document.getElementById('hud').innerHTML = ""
 	if (clean) return -1
-	document.getElementById('hud').innerHTML += bp + "object: starpool</font><br>"
+	document.getElementById('hud').innerHTML += bp + "object: jiggler</font><br>"
 	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>"
-	document.getElementById('hud').innerHTML += bp + "frames: " + (frames/10).toFixed(0) + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "frames: " + frames + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "Δt: &nbsp;&nbsp;&nbsp;&nbsp;" + dt.toFixed(5) + "</font><br>";
 }
 
 document.body.style.overflow = 'hidden'
 document.onkeydown = function(e) {
 	switch (e.keyCode) { 
-		//case 8: e.preventDefault(); init(); break //backspace
+		case 8: e.preventDefault(); init(); break //backspace
 		case 76: clean = !clean; break //l label on/off
 		case 187: zoom *= 1.05; break //+
 		case 189: zoom /= 1.05; break //-
