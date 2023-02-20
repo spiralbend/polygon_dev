@@ -45,10 +45,10 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 
 const clock = new THREE.Clock()
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
-var points, geometry, controls, animid, numParticles, numP3, positions, colors, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = false, stopped = false, clean = true
-var dr = 0.0025, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0, radius = 300
-var numParticles = 1000, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
+var points, geometry, pts, geo, controls, animid, numParticles, numP3, positions, colors, posi, colo, scales, windowHalfX, windowHalfY
+var frames = 0, zoom = 1, rotate = true, stopped = false, clean = true
+var dr = 0.002, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0.25, radius = 500, pix = 80
+var numParticles = 500, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -61,33 +61,38 @@ function render() {
 	camera.lookAt( scene.position )
 	positions = points.geometry.attributes.position.array
 	colors = points.geometry.attributes.col.array
+	posi = pts.geometry.attributes.position.array
+	colo = pts.geometry.attributes.col.array
 	scales = points.geometry.attributes.scale.array
-	
+	if (frames == 0) {
+		posi[0] = 0
+		posi[1] = 0
+		posi[2] = 0
+	}
+
 	if (rotate) { 
 		points.rotateX(dr)
+		points.rotateY(dr/2)
 	}
 	
 	let j = 0
-	//for ( let j = 0; j < numParticles; j++) {
-		for (let k = j + 1; k < numParticles; k++) {
+	for (let k = j + 1; k < numParticles; k++) {
 
-			let u = new THREE.Vector3().copy(pos[j])
-			let v = new THREE.Vector3().copy(pos[k])
-			let d = u.distanceTo(v)
-			let f = Math.pow( d - radius, 3 ) / ( 10**4 )
+		let u = new THREE.Vector3().copy(pos[j])
+		let v = new THREE.Vector3().copy(pos[k])
+		let d = u.distanceTo(v)
+		let f = Math.pow( d - radius, 3 ) / ( 10**3 )
 
-			u.sub(v).multiplyScalar(delta * f)
-			vel[k].add(u)
+		u.sub(v).multiplyScalar(delta * f)
+		vel[k].add(u)
 
-			for (let m = k + 1; m < numParticles; m++) {
-				let w = new THREE.Vector3().copy(pos[m])
-				d = w.distanceTo(v)
-				w.sub(v).multiplyScalar( delta * mss[k] / (d*50) )
-				vel[m].add(w)
-			}
-
+		for (let m = k + 1; m < numParticles; m++) {
+			let w = new THREE.Vector3().copy(pos[m])
+			d = w.distanceTo(v)
+			w.sub(v).multiplyScalar( delta * mss[k] / d )
+			vel[m].add(w)
 		}
-	//}
+	}
 
 	let idx = 0
 	for ( let i = 0; i < numParticles; i++) {
@@ -107,14 +112,18 @@ function render() {
 		idx += 3
 	}
 
-	// positions[3] = 400
-	// positions[4] = 0
-	// positions[5] = 0
-	// scales[0] = 0
+	scales[0] = 0
+	if (Math.random() > 0.6) {
+		posi[0] = Math.random() * 3
+		posi[1] = Math.random() * 3
+		posi[2] = Math.random() * 3
+	}
 
 	points.geometry.attributes.position.needsUpdate = true
 	points.geometry.attributes.col.needsUpdate = true
 	points.geometry.attributes.scale.needsUpdate = true
+	pts.geometry.attributes.position.needsUpdate = true
+	pts.geometry.attributes.col.needsUpdate = true
 
 	renderer.render( scene, camera )
 	label()
@@ -125,11 +134,15 @@ function render() {
 function makeGeometry() {
 
 	var positions = new Array(numP3), colors = new Array(numP3), scales = new Float32Array(numParticles)
+	var posi = new Array(numP3), colo = new Array(numP3)
 	var geometry = new THREE.BufferGeometry()
+	var geo = new THREE.BufferGeometry()
 
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) )
 	geometry.setAttribute( 'col', new THREE.Float32BufferAttribute( colors, 3 ) )
 	geometry.setAttribute( 'scale', new THREE.BufferAttribute( scales, 1 ) )
+	geo.setAttribute( 'position', new THREE.Float32BufferAttribute( posi, 3 ) )
+	geo.setAttribute( 'col', new THREE.Float32BufferAttribute( colo, 3 ) )
 
 	const material = new THREE.ShaderMaterial( {
 		uniforms: {
@@ -140,12 +153,17 @@ function makeGeometry() {
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 	} );
 
+	const sprite = new THREE.TextureLoader().load( './files/nucleus.png' )
+	const mater = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: false } )
+
 	points = new THREE.Points( geometry, material )
-	scene.add( points )
+	pts = new THREE.Points( geo, mater )
+	scene.add( points, pts )
 	
 	pos[0] = new THREE.Vector3 (0,0,0)
 	vel[0] = new THREE.Vector3 (0,0,0)
 	mss[0] = 50
+	let m = Math.random() * 15 + 10
 
 	for (let i=1; i<numParticles; i++) {
 
@@ -153,9 +171,6 @@ function makeGeometry() {
 		let phi   = Math.random() * PI * 2
 
 		pos.push( new THREE.Vector3( 
-			// Math.random() * 25 * flip() + radius * Math.cos(phi) * Math.sin(theta),
-			// Math.random() * 25 * flip() + radius * Math.sin(phi) * Math.sin(theta),
-			// Math.random() * 25 * flip() + radius * Math.cos(theta) ) )
 			radius * Math.cos(phi) * Math.sin(theta),
 			radius * Math.sin(phi) * Math.sin(theta),
 			radius * Math.cos(theta) ) )
@@ -165,7 +180,7 @@ function makeGeometry() {
 			Math.random() * flip() * nudge,
 			Math.random() * flip() * nudge ) )
 
-		mss.push( Math.random() * 15 + 10)
+		mss.push( m )
 	}
 
 	console.log(  "pts", numParticles, 
@@ -182,7 +197,7 @@ function init() {
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
-	camera.position.set( 0, 0, 900 )
+	camera.position.set( 0, 0, 2000 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
