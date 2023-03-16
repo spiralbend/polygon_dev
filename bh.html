@@ -47,8 +47,8 @@ const clock = new THREE.Clock()
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, pts, geo, controls, animid, numParticles, numP3, positions, colors, posi, colo, scales, windowHalfX, windowHalfY
 var frames = 0, zoom = 1, rotate = false, stopped = false, clean = true
-var dr = 0.002, rev = 2 * PI / dr, time = 0, dt = 0.005, nudge = 0, radius = 500, horizon = 50, pix = 80
-var numParticles = 10000, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
+var dr = 0.002, rev = 2 * PI / dr, time = 0, dt = 0.005, dth = 0.01, nudge = 0, radius = 10000, horizon = 50, pix = 80
+var numParticles = 20000, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -81,7 +81,7 @@ function render() {
 		let u = new THREE.Vector3().copy(pos[j])
 		let v = new THREE.Vector3().copy(pos[k])
 		let d = u.distanceTo(v)
-		let f = 1 / d*d
+		let f = 2*mss[k] / d // d*d
 
 		u.sub(v).multiplyScalar(delta * f)
 		vel[k].add(u)
@@ -102,7 +102,9 @@ function render() {
 		pos[i].add(vel[i])
 		let d = Math.sqrt( pos[i].x * pos[i].x + pos[i].y * pos[i].y + pos[i].z * pos[i].z );
 		if (d < horizon) {
-			pos[i].multiplyScalar( 20 )
+//			pos[i].multiplyScalar( 10 )
+			pos[i].x *= radius / horizon
+			pos[i].y *= radius / horizon
 			vel[i].multiplyScalar( 0 )
 		}
 		positions[idx]   = pos[i].x
@@ -171,12 +173,13 @@ function makeGeometry() {
 	vel[0] = new THREE.Vector3 (0,0,0)
 	mss[0] = 50
 	let m = Math.random() * 5 + 4
+	let theta = 0
 
 	for (let i=1; i<numParticles; i++) {
 
-		let theta = Math.random() * PI
-		let phi   = Math.random() * PI * 2
-		let r     = Math.random() / 2
+		// let theta = Math.random() * PI
+		// let phi   = Math.random() * PI * 2
+		let r = Math.random()
 
 		pos.push( new THREE.Vector3( 
 			//3D
@@ -184,8 +187,8 @@ function makeGeometry() {
 			// radius * Math.sin(phi) * Math.sin(theta),
 			// radius * Math.cos(theta) ) )
 			//2D
-			radius * r * Math.cos(phi),
-			radius * r * Math.sin(phi),
+			(horizon + (radius * r)) * Math.cos(theta),
+			(horizon + (radius * r)) * Math.sin(theta),
 			0 ) )
 
 		vel.push( new THREE.Vector3(
@@ -194,6 +197,8 @@ function makeGeometry() {
 			Math.random() * flip() * nudge ) )
 
 		mss.push( m )
+
+		theta += dth
 	}
 
 	console.log(  "pts", numParticles, 
