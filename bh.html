@@ -46,9 +46,9 @@ import { OrbitControls } from './three.js/examples/jsm/controls/OrbitControls.js
 const clock = new THREE.Clock()
 let container, camera, scene, renderer, light, ambientLight; const PI = Math.PI
 var points, geometry, pts, geo, controls, animid, numParticles, numP3, positions, colors, posi, colo, scales, windowHalfX, windowHalfY
-var frames = 0, zoom = 1, rotate = false, stopped = false, clean = true
-var dr = 0.002, rev = 2 * PI / dr, time = 0, dt = 0.005, dth = 0.01, nudge = 0, radius = 10000, horizon = 50, pix = 80
-var numParticles = 20000, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
+var frames = 0, zoom = 1, rotate = true, stopped = false, clean = false
+var dr = 0.001, rev = 2 * PI / dr, time = 0, dt = 0.005, dth = 0.01, nudge = 10, radius = 5000, horizon = 100, pix = 80, crossed = 0
+var numParticles = 250000, numP3 = numParticles * 3, box = 200, pos = [], vel = [], mss = []
 
 // START
 init()
@@ -72,61 +72,74 @@ function render() {
 
 	if (rotate) { 
 		points.rotateX(dr)
-		points.rotateY(dr/2)
+		points.rotateY(dr/2.13)
 	}
 
 	let j = 0
 	for (let k = j + 1; k < numParticles; k++) {
 
-		let u = new THREE.Vector3().copy(pos[j])
-		let v = new THREE.Vector3().copy(pos[k])
+		let u = new THREE.Vector3().copy(pos[j]) // central mass
+		let v = new THREE.Vector3().copy(pos[k]) // this particle
 		let d = u.distanceTo(v)
-		let f = 2*mss[k] / d // d*d
-
+		
+		// GRAVITY
+		let f = (600) / (d)
 		u.sub(v).multiplyScalar(delta * f)
 		vel[k].add(u)
 
-		// mutual repulsions in the cloud
-		// for (let m = k + 1; m < numParticles; m++) {
-		// 	let w = new THREE.Vector3().copy(pos[m])
-		// 	d = w.distanceTo(v)
-		// 	w.sub(v).multiplyScalar( delta * mss[k] / d )
-		// 	vel[m].add(w)
-		// }
+		// DRAG
+		//let cfod = (d) / (radius) //not it
+		//let cfod = (d-horizon+90) / (radius-horizon+90) //nope
+		//let cfod = 1 - 1/d //v.g. but disky
+		//exp. smaller = more drag
+		let cfod = 1 - 1/Math.pow(d+1,0.65) //getting there but slow
+		vel[k].multiplyScalar(cfod)
+		
 	}
 
 	let idx = 0
-	for ( let i = 0; i < numParticles; i++) {
-		// let u = new THREE.Vector3().copy(pos[i])
-		// console.log(u.length)
+	for ( let i = 1; i < numParticles; i++) {
+
 		pos[i].add(vel[i])
-		let d = Math.sqrt( pos[i].x * pos[i].x + pos[i].y * pos[i].y + pos[i].z * pos[i].z );
+		let X = pos[i].x; let Y = pos[i].y; let Z = pos[i].z
+		let d = Math.sqrt( X*X + Y*Y + Z*Z );
+
 		if (d < horizon) {
-//			pos[i].multiplyScalar( 10 )
+			// RESET BACK TO RADIUS
+			crossed++
 			pos[i].x *= radius / horizon
 			pos[i].y *= radius / horizon
-			vel[i].multiplyScalar( 0 )
+
+			// TANGENT NUDGE
+			let w = new THREE.Vector3 (Y,-X,0)
+			w.multiplyScalar(0.33)
+			vel[i].multiplyScalar(0)
+			vel[i].add(w)
+		
+			// NUDGE OUT OF PLANE (not strictly necessary)
+			pos[i].add( new THREE.Vector3(
+				Math.random() * flip() * nudge,
+				Math.random() * flip() * nudge,
+				Math.random() * flip() * nudge ) )
 		}
+
 		positions[idx]   = pos[i].x
 		positions[idx+1] = pos[i].y
-		positions[idx+2] = pos[i].z
+		positions[idx+2] = Z
 
 		let mass = mss[i]
 		scales[i] = mass
 
-		colors[idx]   = 1 - (mass - 10) / 15
-		colors[idx+1] = 0.45
-		colors[idx+2] = (mass - 10) / 15
+		if (frames == 0) {
+			colors[idx]   = 1 - (mass - 12) / 9
+			colors[idx+1] = 0.55
+			colors[idx+2] = (mass - 12) / 9
+		}
 
 		idx += 3
 	}
 
 	scales[0] = 0
-	// if (Math.random() > 0.6) {
-	// 	posi[0] = Math.random() * 3
-	// 	posi[1] = Math.random() * 3
-	// 	posi[2] = Math.random() * 3
-	// }
 
 	points.geometry.attributes.position.needsUpdate = true
 	points.geometry.attributes.col.needsUpdate = true
@@ -162,7 +175,7 @@ function makeGeometry() {
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 	} );
 
-	const sprite = new THREE.TextureLoader().load( './files/bh.png' )
+	const sprite = new THREE.TextureLoader().load( './files/Black-Hole.png' )
 	const mater = new THREE.PointsMaterial( { size: pix, map: sprite, vertexColors: false } )
 
 	points = new THREE.Points( geometry, material )
@@ -172,21 +185,13 @@ function makeGeometry() {
 	pos[0] = new THREE.Vector3 (0,0,0)
 	vel[0] = new THREE.Vector3 (0,0,0)
 	mss[0] = 50
-	let m = Math.random() * 5 + 4
 	let theta = 0
 
 	for (let i=1; i<numParticles; i++) {
 
-		// let theta = Math.random() * PI
-		// let phi   = Math.random() * PI * 2
 		let r = Math.random()
 
 		pos.push( new THREE.Vector3( 
-			//3D
-			// radius * Math.cos(phi) * Math.sin(theta),
-			// radius * Math.sin(phi) * Math.sin(theta),
-			// radius * Math.cos(theta) ) )
-			//2D
 			(horizon + (radius * r)) * Math.cos(theta),
 			(horizon + (radius * r)) * Math.sin(theta),
 			0 ) )
@@ -196,8 +201,7 @@ function makeGeometry() {
 			Math.random() * flip() * nudge,
 			Math.random() * flip() * nudge ) )
 
-		mss.push( m )
-
+		mss.push( Math.random() * 9 + 12 )
 		theta += dth
 	}
 
@@ -214,8 +218,8 @@ function init() {
 
 	container = document.createElement( 'div' )
 	document.body.appendChild( container )
-	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 10000 )
-	camera.position.set( 0, 0, 2000 )
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 100000 )
+	camera.position.set( 0, 0, 4000 )
 	scene = new THREE.Scene()
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } )
@@ -253,8 +257,10 @@ function label() {
 	var bp = "<font color=#00FF00 face=Courier size=5>"
 	document.getElementById('hud').innerHTML = ""
 	if (clean) return -1
-	document.getElementById('hud').innerHTML += bp + "object: jiggler</font><br>"
+	let cy = Math.floor( crossed / (numParticles - 1) )
+	document.getElementById('hud').innerHTML += bp + "object: black hole</font><br>"
 	document.getElementById('hud').innerHTML += bp + "points: " + numParticles + "</font><br>"
+	document.getElementById('hud').innerHTML += bp + "ingest: " + cy + "-" + crossed % (numParticles - 1) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "zoomfx: " + zoom.toFixed(4) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "camera: " + camera.position.x.toFixed(0) + "," + camera.position.y.toFixed(0) + "," + camera.position.z.toFixed(0) + "</font><br>"
 	document.getElementById('hud').innerHTML += bp + "frames: " + frames + "</font><br>"
