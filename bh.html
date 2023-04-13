@@ -88,11 +88,7 @@ function render() {
 		vel[k].add(u)
 
 		// DRAG
-		//let cfod = (d) / (radius) //not it
-		//let cfod = (d-horizon+90) / (radius-horizon+90) //nope
-		//let cfod = 1 - 1/d //v.g. but disky
-		//exp. smaller = more drag
-		let cfod = 1 - 1/Math.pow(d+1,0.65) //getting there but slow
+		let cfod = 1 - 1 / Math.pow( d+1, 0.65 )
 		vel[k].multiplyScalar(cfod)
 		
 	}
